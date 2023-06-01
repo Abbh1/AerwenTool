@@ -1,0 +1,324 @@
+using Infrastructure.Attribute;
+using Microsoft.AspNetCore.Http;
+using SqlSugar;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Infrastructure;
+using ARW.Model;
+using ARW.Repository;
+using ARW.Repository.Business.${genTable.moduleName};
+using ARW.Service.Business.IBusinessService.${genTable.moduleName};
+using ARW.Model.Dto.Business.${genTable.moduleName};
+using ARW.Model.Models.Business.${genTable.moduleName};
+using ARW.Model.Vo.Business.${genTable.moduleName};
+
+namespace ARW.Service.Business.BusinessService.${genTable.moduleName}
+{
+    /// <summary>
+    /// ${genTable.FunctionName}接口实现类
+    /// </summary>
+    [AppService(ServiceType = typeof(I${replaceDto.ModelTypeName}Service), ServiceLifetime = LifeTime.Transient)]
+    public class ${replaceDto.ModelTypeName}ServiceImpl : BaseService<${replaceDto.ModelTypeName}>, I${replaceDto.ModelTypeName}Service
+    {
+        private readonly ${replaceDto.ModelTypeName}Repository _${replaceDto.ModelTypeName}Repository;
+
+        public ${replaceDto.ModelTypeName}ServiceImpl(${replaceDto.ModelTypeName}Repository ${replaceDto.ModelTypeName}Repository)
+        {
+            this._${replaceDto.ModelTypeName}Repository = ${replaceDto.ModelTypeName}Repository;
+        }
+
+	#region 业务逻辑代码
+	
+		
+$if(genTable.TplCategory == "tree")
+		/// <summary>
+        /// 查询${genTable.FunctionName}树形列表
+        /// </summary>
+		public async Task<List<${replaceDto.ModelTypeName}Vo>> Get${replaceDto.ModelTypeName}TreeList(${replaceDto.ModelTypeName}QueryDto parm)
+		        {
+            //开始拼装查询条件
+            var predicate = Expressionable.Create<${replaceDto.ModelTypeName}>();
+
+$foreach(column in genTable.Columns)
+$if(column.IsQuery)
+$if(column.CsharpType == "string")
+$if(genTable.TplCategory != "tree")
+            predicate = predicate.AndIF(!string.IsNullOrEmpty(parm.${column.CsharpField}), ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$end
+$elseif(column.CsharpType == "DateTime")
+           predicate = predicate.AndIF(parm.BeginTime != null && parm.EndTime != null, s => s.${column.CsharpField} >= parm.BeginTime && s.${column.CsharpField} <= parm.EndTime);
+$elseif(column.CsharpType == "int" || column.CsharpType == "long")
+            predicate = predicate.AndIF(parm.${column.CsharpField} != null, ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$end
+$end
+${end}
+            var query = _${replaceDto.ModelTypeName}Repository
+                .Queryable()
+				.LeftJoin<${replaceDto.ModelTypeName}>((s, c) => s.${genTable.Options.TreeParentCode} == c.${genTable.Options.TreeCode})
+                .Where(predicate.ToExpression())
+$if(genTable.Options.SortField != "" && genTable.Options.SortField != null)
+                .OrderBy(s => s.${genTable.Options.SortField},OrderByType.${genTable.Options.SortType})
+$end
+                .Select((s,c) => new ${replaceDto.ModelTypeName}Vo
+                {
+   $foreach(item in genTable.Columns)
+   $if(item.IsInit != true)
+   $if((item.IsList || item.IsPk))
+   ${item.CsharpField} = s.${item.CsharpField},
+   $end
+   $end
+   $end
+   ParentName = c.${genTable.Options.TreeName},
+});
+
+        return await query.ToTreeAsync(it => it.Children, it => it.${genTable.Options.TreeParentCode}, 0);
+        }
+
+
+        /// <summary>
+        /// 查询${genTable.FunctionName}列表
+        /// </summary>
+		public Task<List<${replaceDto.ModelTypeName}Vo>> Get${replaceDto.ModelTypeName}List(${replaceDto.ModelTypeName}QueryDto parm)
+        {
+            //开始拼装查询条件d
+            var predicate = Expressionable.Create<${replaceDto.ModelTypeName}>();
+
+$foreach(column in genTable.Columns)
+$if(column.IsQuery)
+$if(column.CsharpType == "string")
+            predicate = predicate.AndIF(!string.IsNullOrEmpty(parm.${column.CsharpField}), ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$elseif(column.CsharpType == "DateTime")
+            predicate = predicate.AndIF(parm.BeginTime != null && parm.EndTime != null, it => it.${column.CsharpField} >= parm.BeginTime && it.${column.CsharpField} <= parm.EndTime);
+$elseif(column.CsharpType == "int" || column.CsharpType == "long")
+            predicate = predicate.AndIF(parm.${column.CsharpField} != null, ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$end
+$end
+${end}
+            var query = _${replaceDto.ModelTypeName}Repository
+                .Queryable()
+                .Where(predicate.ToExpression())
+$if(genTable.Options.SortField != "" && genTable.Options.SortField != null)
+                .OrderBy(s => s.${genTable.Options.SortField},OrderByType.${genTable.Options.SortType})
+$end
+                .Select(s => new ${replaceDto.ModelTypeName}Vo
+                {
+   $foreach(item in genTable.Columns)
+   $if(item.IsInit != true)
+   $if((item.IsList || item.IsPk))
+   ${item.CsharpField} = s.${item.CsharpField},
+   $end
+   $end
+   $end
+});
+                
+
+		return query.ToListAsync();
+        }
+$else
+		/// <summary>
+        /// 查询${genTable.FunctionName}分页列表
+        /// </summary>
+		public Task<PagedInfo<${replaceDto.ModelTypeName}Vo>> Get${replaceDto.ModelTypeName}List(${replaceDto.ModelTypeName}QueryDto parm)
+        {
+            //开始拼装查询条件d
+            var predicate = Expressionable.Create<${replaceDto.ModelTypeName}>();
+
+$foreach(column in genTable.Columns)
+$if(column.IsQuery)
+$if(column.CsharpType == "string")
+            predicate = predicate.AndIF(!string.IsNullOrEmpty(parm.${column.CsharpField}), ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$elseif(column.CsharpType == "DateTime")
+            predicate = predicate.AndIF(parm.BeginTime != null && parm.EndTime != null, it => it.${column.CsharpField} >= parm.BeginTime && it.${column.CsharpField} <= parm.EndTime);
+$elseif(column.CsharpType == "int" || column.CsharpType == "long")
+            predicate = predicate.AndIF(parm.${column.CsharpField} != null, ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$end
+$end
+${end}
+            var query = _${replaceDto.ModelTypeName}Repository
+                .Queryable()
+                .Where(predicate.ToExpression())
+$if(genTable.Options.SortField != "" && genTable.Options.SortField != null)
+                .OrderBy(s => s.${genTable.Options.SortField},OrderByType.${genTable.Options.SortType})
+$end
+                .Select(s => new ${replaceDto.ModelTypeName}Vo
+                {
+   $foreach(item in genTable.Columns)
+   $if(item.IsInit != true)
+   $if((item.IsList || item.IsPk))
+   ${item.CsharpField} = s.${item.CsharpField},
+   $end
+   $end
+   $end
+});
+                
+
+		return query.ToPageAsync(parm);
+        }
+$end
+
+		/// <summary>
+        ///  添加或修改${genTable.FunctionName}
+        /// </summary>
+        public async Task<string> AddOrUpdate${replaceDto.ModelTypeName}(${replaceDto.ModelTypeName} model)
+        {
+            if (model.${replaceDto.ModelTypeName}Id != 0)
+            {
+$if(genTable.TplCategory == "tree")
+                var type = await _${replaceDto.ModelTypeName}Repository.GetListAsync(s => s.${genTable.Options.TreeParentCode} == model.${genTable.Options.TreeCode});
+                if (type != null)
+                {
+                    foreach (var item in type)
+                    {
+                        if (model.${genTable.Options.TreeParentCode} == item.${genTable.Options.TreeCode}) throw new CustomException("上级菜单不能选择自己的子级！");
+                    }
+                }
+                if (model.${genTable.Options.TreeParentCode} == model.${genTable.Options.TreeCode}) throw new CustomException("上级菜单不能选择与当前菜单一样的！");
+$end
+                var response = await _${replaceDto.ModelTypeName}Repository.UpdateAsync(model);
+                return "修改成功！";
+            }
+            else
+            {
+$if(genTable.TplCategory == "tree")
+                var info = _${replaceDto.ModelTypeName}Repository.GetFirst(it => it.${genTable.Options.TreeCode} == model.${genTable.Options.TreeParentCode});
+                model.${replaceDto.ModelTypeName}AncestralGuid = "0";
+                if (info != null) model.${replaceDto.ModelTypeName}AncestralGuid = info.${replaceDto.ModelTypeName}AncestralGuid + "," + model.${genTable.Options.TreeParentCode};
+$end
+
+                var response = await _${replaceDto.ModelTypeName}Repository.InsertReturnSnowflakeIdAsync(model);
+                return "添加成功！";
+            }
+        }
+
+        #region Excel处理
+$if(replaceDto.ShowBtnImport)
+		/// <summary>
+        /// 数据导入处理
+        /// </summary>
+        public async Task<${replaceDto.ModelTypeName}Vo> HandleImportData(${replaceDto.ModelTypeName}Vo ${replaceDto.ModelTypeName})
+        {
+            return ${replaceDto.ModelTypeName};
+        }
+
+
+        /// <summary>
+        /// Excel导入
+        /// </summary>
+        public async Task<string> ImportExcel(${replaceDto.ModelTypeName} ${replaceDto.ModelTypeName},int index,bool isUpdateSupport,string user)
+        {
+            try
+            {
+                // 空值判断
+                // if (${replaceDto.ModelTypeName}.${replaceDto.ModelTypeName}Id == null) throw new CustomException("${genTable.FunctionName}不能为空");
+
+                if (isUpdateSupport)
+                {
+                    // 判断唯一值
+                    var model = await GetFirstAsync(s => s.${replaceDto.ModelTypeName}Id == ${replaceDto.ModelTypeName}.${replaceDto.ModelTypeName}Id);
+                
+                    // 如果为空就新增数据
+                    if (model == null)
+                    {
+                        // 开启事务
+                        var res = await UseTranAsync(async () =>
+                        {
+                            var addRes = await AddOrUpdate${replaceDto.ModelTypeName}(${replaceDto.ModelTypeName});
+                        });
+                        var addStr = $"第 {index} 行 => ${genTable.FunctionName}：【{${replaceDto.ModelTypeName}.${replaceDto.ModelTypeName}Id}】<span style='color:#27af49'>新增成功!</span><br>";
+                        return addStr;
+                    }
+                    else
+                    {
+                        // 如果有数据就进行修改
+                        // 开启事务
+                        await UseTranAsync(async () =>
+                        {
+                            ${replaceDto.ModelTypeName}.${replaceDto.ModelTypeName}Id = model.${replaceDto.ModelTypeName}Id;
+                            ${replaceDto.ModelTypeName}.${replaceDto.ModelTypeName}Guid = model.${replaceDto.ModelTypeName}Guid;
+                            ${replaceDto.ModelTypeName}.Update_by = user;
+                            ${replaceDto.ModelTypeName}.Update_time = DateTime.Now;
+                            var editRes = await AddOrUpdate${replaceDto.ModelTypeName}(${replaceDto.ModelTypeName});
+                        });
+                        var editStr = $"第 {index} 行 => ${genTable.FunctionName}：【{${replaceDto.ModelTypeName}.${replaceDto.ModelTypeName}Id}】<span style='color:#e6a23c'>更新成功!</span><br>";
+                        return editStr;
+                    }
+                }
+                else{
+                     // 开启事务
+                    var res = await UseTranAsync(async () =>
+                    {
+                        var addRes = await AddOrUpdate${replaceDto.ModelTypeName}(${replaceDto.ModelTypeName});
+                    });
+                    //Console.WriteLine(res.IsSuccess);
+                    var addStr = $"第 {index} 行 => ${genTable.FunctionName}：【{${replaceDto.ModelTypeName}.${replaceDto.ModelTypeName}Id}】<span style='color:#27af49'>新增成功!</span><br>";
+                    return addStr;
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorRes = $"第 {index} 行 => ${genTable.FunctionName}：【{${replaceDto.ModelTypeName}.${replaceDto.ModelTypeName}Id}】<span style='color:red'>导入失败！{ex.Message}</span><br>";
+                return errorRes;
+                throw;
+            }
+        }
+
+$end
+
+$if(replaceDto.ShowBtnExport)
+    
+        /// <summary>
+        /// Excel数据导出处理
+        /// </summary>
+        public async Task<List<${replaceDto.ModelTypeName}Vo>> HandleExportData(List<${replaceDto.ModelTypeName}Vo> data)
+        {
+            return data;
+        }
+$end
+
+        #endregion
+	
+
+$if(replaceDto.ShowBtnAudit)
+        /// <summary>
+        /// 审核
+        /// </summary>
+        public async Task<string> Audit(int id, int status, long userGuid)
+        {
+            try
+            {
+                var res = await _${replaceDto.ModelTypeName}Repository.GetFirstAsync(s => s.${replaceDto.ModelTypeName}Id == id);
+                await UseTranAsync(async () =>
+                    {
+                        await _${replaceDto.ModelTypeName}Repository.UpdateAsync(f => new ${replaceDto.ModelTypeName} { ${replaceDto.ModelTypeName}AuditStatus = status, ${replaceDto.ModelTypeName}AuditUserGuid = userGuid, Update_time = DateTime.Now, Update_by = userGuid.ToString() }, s => s.${replaceDto.ModelTypeName}Id == id);
+                    });
+                if (res.${replaceDto.ModelTypeName}AuditStatus == 2)
+                {
+                    var errorRes = $"${genTable.FunctionName}：【{res.${replaceDto.ModelTypeName}Name}】<span style='color:red'>已通过审核！</span><br>";
+                    return errorRes;
+                }
+                if (res.${replaceDto.ModelTypeName}AuditStatus == 3)
+                {
+                    var errorRes = $"${genTable.FunctionName}：【{res.${replaceDto.ModelTypeName}Name}】<span style='color:red'>已被驳回！</span><br>";
+                    return errorRes;
+                }
+                else if (res.${replaceDto.ModelTypeName}AuditStatus == 1)
+                {
+                    var addStr = $"${genTable.FunctionName}：【{res.${replaceDto.ModelTypeName}Name}】<span style='color:#27af49'>审核通过!</span><br>";
+                    return addStr;
+                }
+                return "";
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+$end
+
+#endregion
+
+    }
+}

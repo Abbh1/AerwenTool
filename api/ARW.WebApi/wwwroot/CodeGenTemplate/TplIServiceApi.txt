@@ -1,0 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ARW.Model;
+using ARW.Model.Dto.Api.${genTable.moduleName};
+using ARW.Model.Models.Business.${genTable.moduleName};
+using ARW.Model.Vo.Api.${genTable.moduleName};
+
+namespace ARW.Service.Api.IBusinessService.${genTable.moduleName}
+{
+    public interface I${replaceDto.ModelTypeName}ServiceApi : IBaseService<${replaceDto.ModelTypeName}>
+    {
+$if(genTable.TplCategory == "tree")
+        /// <summary>
+        /// 获取${genTable.FunctionName}树形列表(Api)
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+        Task<List<${replaceDto.ModelTypeName}VoApi>> Get${replaceDto.ModelTypeName}TreeListApi(${replaceDto.ModelTypeName}QueryDtoApi parm);
+$else
+		/// <summary>
+        /// 获取${genTable.FunctionName}分页列表(Api)
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+        Task<PagedInfo<${replaceDto.ModelTypeName}VoApi>> Get${replaceDto.ModelTypeName}ListApi(${replaceDto.ModelTypeName}QueryDtoApi parm);
+$end
+
+		/// <summary>
+        /// 获取${genTable.FunctionName}详情(Api)
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+        Task<string> Get${replaceDto.ModelTypeName}Details(${replaceDto.ModelTypeName}DtoApi parm);
+
+    }
+}

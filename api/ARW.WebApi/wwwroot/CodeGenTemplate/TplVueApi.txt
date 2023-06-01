@@ -1,0 +1,63 @@
+import request from '@/utils/request'
+
+$if(genTable.TplCategory == "tree")
+/**
+* ${genTable.functionName}树形查询列表
+* @param {查询条件} data
+*/
+export function ${tool.FirstLowerCase(genTable.BusinessName)}TreeList(query) {
+  return request({
+    url: '/business/${genTable.BusinessName}/get${genTable.BusinessName}TreeList',
+    method: 'get',
+    params: query
+  })
+}
+$else
+// ${genTable.functionName}分页查询列表
+export function ${tool.FirstLowerCase(genTable.BusinessName)}List(query) {
+  return request({
+    url: '/business/${genTable.BusinessName}/get${genTable.BusinessName}List',
+    method: 'get',
+    params: query
+  })
+}
+$end
+
+// ${genTable.functionName}新增或修改
+export function addOrUpdate${genTable.BusinessName}(data) {
+  return request({
+    url: '/business/${genTable.BusinessName}/addOrUpdate${genTable.BusinessName}',
+    method: 'post',
+    data: data,
+  })
+}
+
+// ${genTable.functionName}删除
+export function del${genTable.BusinessName}(ids) {
+  return request({
+    url: '/business/${genTable.BusinessName}/'+ ids,
+    method: 'delete'
+  })
+}
+
+$if(replaceDto.ShowBtnExport)
+// ${genTable.functionName}导出
+export function export${genTable.BusinessName}(query) {
+  return request({
+    url: 'business/${genTable.BusinessName}/export${genTable.BusinessName}',
+    method: 'get',
+    params: query
+  })
+}
+$end
+
+$if(replaceDto.ShowBtnAudit)
+// ${genTable.functionName}审核
+export function audit(data) {
+  return request({
+    url: 'business/${genTable.BusinessName}/audit',
+    method: 'put',
+    data: data
+  })
+}
+$end

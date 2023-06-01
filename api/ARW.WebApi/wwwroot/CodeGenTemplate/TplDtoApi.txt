@@ -1,0 +1,34 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using ${options.ModelsNamespace}.Models.Business.${genTable.moduleName};
+
+namespace ${options.DtosNamespace}.Dto.Api.${genTable.moduleName}
+{
+
+    /// <summary>
+    /// ${genTable.FunctionName}查询对象Api
+    /// </summary>
+    public class ${replaceDto.ModelTypeName}QueryDtoApi : PagerInfo 
+    {
+$foreach(item in genTable.Columns)
+$if(item.IsQuery && item.htmlType == "datetime")
+        public DateTime? Begin$item.CsharpField { get; set; }
+        public DateTime? End$item.CsharpField { get; set; }
+$elseif(item.IsQuery)
+        public $item.CsharpType$if(item.CsharpType != "string")?$end $item.CsharpField { get; set; }
+$end
+$end
+    }
+	
+	
+	/// <summary>
+    /// ${genTable.FunctionName}详情输入对象Api
+    /// </summary>
+    public class ${replaceDto.ModelTypeName}DtoApi
+    {
+        [Required(ErrorMessage = "${replaceDto.ModelTypeName}Guid不能为空")]
+        public long ${replaceDto.ModelTypeName}Guid { get; set; }
+    }
+	
+}

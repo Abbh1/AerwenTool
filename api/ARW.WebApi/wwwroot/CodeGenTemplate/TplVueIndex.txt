@@ -1,0 +1,514 @@
+<!--
+ * @Descripttion: (${genTable.functionName}/${genTable.tableName})
+ * @version: (1.0)
+ * @Author: (${replaceDto.Author})
+ * @Date: (${replaceDto.AddTime})
+ * @LastEditors: (${replaceDto.Author})
+ * @LastEditTime: (${replaceDto.AddTime})
+-->
+<template>
+  <div class="app-container">
+    <el-row :gutter="24">
+      <!-- 搜索框 queryParams.需要搜索的字段 -->
+      <el-form :model="queryParams" label-position="left" style="margin:15px;"  inline ref="queryForm" label-width="68px" v-show="showSearch"
+        @submit.prevent>
+$foreach(column in genTable.Columns)
+$set(labelName = "")
+$set(columnName = "")
+$set(numLabel = "")
+$if(column.IsQuery == true)
+$set(columnName = column.CsharpFieldFl)
+$if(column.ColumnComment != "")
+$set(labelName = column.ColumnComment)
+$else
+$set(labelName = column.CsharpFieldFl)
+$end
+$if(column.CsharpType == "int" || column.CsharpType == "long")
+$set(numLabel = ".number")
+$end
+$if(column.IsInit != true)
+$if(column.HtmlType == "datetime")
+      <el-form-item label="$labelName">
+        <el-date-picker 
+          v-model="dateRange${column.CsharpField}" 
+          style="width: 240px" 
+          type="daterange" 
+          range-separator="-"
+          start-placeholder="开始日期" 
+          end-placeholder="结束日期" 
+          placeholder="请选择$labelName"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          :shortcuts="dateOptions">
+        </el-date-picker>
+      </el-form-item>
+$elseif(column.HtmlType == "select")
+      <el-form-item label="${labelName}" prop="${columnName}">
+        <el-select v-model="queryParams.${columnName}" placeholder="请选择${labelName}" clearable @change="handleQuery">
+          <el-option v-for="item in $if(column.DictType != "") ${column.DictType} $else ${column.CsharpFieldFl}_options$end" :key="item.dictValue" :label="item.dictLabel" :value="item.dictValue"></el-option>
+        </el-select>
+      </el-form-item>
+$elseif(column.HtmlType == "radio")
+      <el-form-item label="${labelName}" prop="${columnName}">
+        <el-radio-group v-model="queryParams.${columnName}">
+          <el-radio v-for="item in $if(column.DictType != "") ${column.DictType} $else ${column.CsharpFieldFl}_options$end" :key="item.dictValue" :label="item.dictValue">{{item.dictLabel}}</el-radio>
+        </el-radio-group>
+      </el-form-item>
+$else
+      <el-form-item label="${labelName}" prop="${columnName}">
+        <el-input v-model${numLabel}="queryParams.${columnName}" placeholder="请输入${labelName}" clearable @keyup.enter="handleQuery"/>
+      </el-form-item>
+$end
+$end
+$end
+$end
+      <el-form-item>
+        <el-button icon="search" type="primary" @click="handleQuery">{{ ${t}t('btn.search') }}</el-button>
+        <el-button icon="refresh" @click="resetQuery">{{ ${t}t('btn.reset') }}</el-button>
+      </el-form-item>
+      </el-form>
+    </el-row>
+
+    <!-- 工具按钮 -->
+    <el-row :gutter="10" class="mb8">
+$if(genTable.TplCategory == "tree")
+	  <el-col :span="1.5">
+        <el-button type="info" plain icon="sort" @click="toggleExpandAll">展开/折叠</el-button>
+      </el-col>
+$end
+$if(replaceDto.ShowBtnAdd)
+      <el-col :span="1.5">
+        <el-button type="primary" v-hasPermi="['${replaceDto.PermissionPrefix}:addOrUpdateKey']" plain icon="plus" @click="AddDialogVisible = true">
+          {{ ${t}t('btn.add') }}
+        </el-button>
+      </el-col>
+$end
+$if(replaceDto.ShowBtnDelete)
+      <el-col :span="1.5">
+        <el-button type="danger" :disabled="multiple" v-hasPermi="['${replaceDto.PermissionPrefix}:delete']" plain icon="delete" @click="handleDelete">
+          {{ ${t}t('btn.delete') }}
+        </el-button>
+      </el-col>
+$end
+$if(replaceDto.ShowBtnAudit)
+      <el-col :span="1.5">
+        <el-button type="warning" :disabled="multiple" v-hasPermi="['${replaceDto.PermissionPrefix}:audit']" plain icon="check"
+          @click="handleAudit">审核</el-button>
+      </el-col>
+$end
+$if(replaceDto.ShowBtnImport)
+      <el-col :span="1.5">
+        <el-button type="primary" plain icon="Upload" @click="UploadDialogVisible = true"
+          v-hasPermi="['business:student:import']">导入</el-button>
+      </el-col>
+$end
+$if(replaceDto.ShowBtnExport)
+      <el-col :span="1.5">
+        <el-button type="warning" plain icon="download" @click="handleExport" v-hasPermi="['${replaceDto.PermissionPrefix}:export']">
+          {{ ${t}t('btn.export') }}
+        </el-button>
+      </el-col>
+$end
+      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
+    </el-row>
+
+    <!-- 表格渲染  prop="对应的字段"-->
+$if(genTable.TplCategory == "tree")
+	<el-table v-loading="loading" :data="dataList" ref="tableRef" highlight-current-row @selection-change="handleSelectionChange" v-if="refreshTable" :default-expand-all="isExpandAll" row-key="${tool.FirstLowerCase(genTable.Options.TreeCode)}" :tree-props="{ children: 'children', hasChildren: 'hasChildren' }">
+$else
+    <el-table v-loading="loading" :data="dataList" ref="tableRef" border highlight-current-row @selection-change="handleSelectionChange">
+$end
+      <el-table-column type="selection" width="50" align="center" />
+	  
+$foreach(column in genTable.Columns)
+$set(labelName = "")
+$set(checkboxHtml = "")
+$set(showToolTipHtml = "")
+$set(columnName = column.CsharpFieldFl)
+$if(column.CsharpType == "string" || column.HtmlType == "datetime")
+$set(showToolTipHtml = " :show-overflow-tooltip=\"true\"")
+$end
+$if(column.ColumnComment != "")
+$set(labelName = column.ColumnComment)
+$else
+$set(labelName = column.CsharpFieldFl)
+$end
+$if(column.IsList == true && column.IsGuid == false && column.IsInit == false  && column.IsPk == false)
+$if(column.HtmlType == "customInput" && column.IsPk == false)
+      <el-table-column prop="${columnName}" label="${labelName}" width="90" sortable align="center">
+        <template #default="scope">
+          <span v-show="editIndex != scope.$${index}index" @click="editCurrRow(scope.$${index}index)">{{scope.row.${columnName}}}</span>
+          <el-input
+            :ref="setColumnsRef"
+            v-show="(editIndex == scope.$${index}index)" 
+            v-model="scope.row.${columnName}" 
+            @blur="handleChangeSort(scope.row)"></el-input>
+        </template>
+      </el-table-column>
+$elseif(column.HtmlType == "imageUpload")
+      <el-table-column prop="${columnName}" label="${labelName}" align="center">
+        <template #default="scope">
+          <el-image preview-teleported :hide-on-click-modal="true" lazy class="table-td-thumb" fit="contain" :src="scope.row.${columnName}.split(',')[0]" :preview-src-list="scope.row.${columnName}.split(',')">
+            <div><el-icon :size="15"><document /></el-icon></div>
+          </el-image>
+        </template>
+      </el-table-column>
+$elseif(column.HtmlType == "checkbox" || column.HtmlType == "select" || column.HtmlType == "radio")
+      <el-table-column prop="${columnName}" label="${labelName}" align="center"${column.sortStr}>
+        <template #default="scope">
+$if(column.HtmlType == "checkbox")
+          <dict-tag :options="$if(column.DictType != "") ${column.DictType} $else ${column.CsharpFieldFl}_options$end" :value="scope.row.${columnName} ? scope.row.${columnName}.split(',') : []" />
+$else
+          <dict-tag :options="$if(column.DictType != "") ${column.DictType} $else ${column.CsharpFieldFl}_options$end" :value="scope.row.${columnName}" />
+$end
+        </template>
+      </el-table-column>
+$else
+      <el-table-column prop="${columnName}" label="${labelName}" align="center"${showToolTipHtml}${column.sortStr} />
+$end
+$end
+$end
+
+      <el-table-column label="操作" width="350" fixed="right">
+        <template #default="scope">
+$if(replaceDto.ShowBtnAudit)
+          <el-button type="warning" v-if="scope.row.${tool.FirstLowerCase(genTable.BusinessName)}AuditStatus == 1" size="small" icon="check"
+            @click="handleAudit(scope.row)" v-hasPermi="['${replaceDto.PermissionPrefix}:audit']">审核</el-button>
+$if(replaceDto.ShowBtnEdit)
+          <el-button type="primary" v-if="scope.row.${tool.FirstLowerCase(genTable.BusinessName)}AuditStatus == 2" size="small" icon="edit" @click="handleUpdate(scope.row)"
+            v-hasPermi="['${replaceDto.PermissionPrefix}:addOrUpdateKey']">编辑</el-button>
+$end
+$if(replaceDto.ShowBtnDelete)
+          <el-button type="danger" size="small" icon="delete" @click="handleDelete(scope.row)"
+            v-hasPermi="['${replaceDto.PermissionPrefix}:delete']">删除</el-button>
+$end
+$if(replaceDto.ShowBtnView)
+          <el-button size="small" icon="view" @click="handleDetail(scope.row)">查看</el-button>
+$end
+$else
+$if(replaceDto.ShowBtnEdit)
+          <el-button type="primary" size="small" icon="edit" @click="handleUpdate(scope.row)"
+            v-hasPermi="['${replaceDto.PermissionPrefix}:addOrUpdateKey']">编辑</el-button>
+$end
+$if(replaceDto.ShowBtnDelete)
+          <el-button type="danger" size="small" icon="delete" @click="handleDelete(scope.row)"
+            v-hasPermi="['${replaceDto.PermissionPrefix}:delete']">删除</el-button>
+$end
+$if(replaceDto.ShowBtnView)
+          <el-button size="small" icon="view" @click="handleDetail(scope.row)">查看</el-button>
+$end
+$end
+        </template>
+      </el-table-column>
+
+    </el-table>
+$if(genTable.TplCategory != "tree")
+    <pagination :total="total" v-model:page="queryParams.pageNum" v-model:limit="queryParams.pageSize"
+      @pagination="getList" />
+$end
+  </div>
+  
+$if(replaceDto.ShowBtnAdd)
+  <!-- 添加 -->
+  <AddDialog v-model="AddDialogVisible" :done="() => resetQuery()"></AddDialog>
+$end
+$if(replaceDto.ShowBtnEdit)
+  <!-- 编辑 -->
+  <EditDialog v-model="EditDialogVisible" :data="EditDialogRow" :done="() => resetQuery()"></EditDialog>
+$end
+$if(replaceDto.ShowBtnView)
+  <!-- 详情 -->
+  <DetailDialog v-model="DetailDialogVisible" :data="DetailDialogRow" :done="() => resetQuery()"></DetailDialog>
+$end
+$if(replaceDto.ShowBtnImport)
+  <!-- 导入 -->
+  <UploadDialog v-model="UploadDialogVisible" :done="() => resetQuery()"></UploadDialog>
+$end
+</template>
+<script setup name="${genTable.BusinessName.ToLower()}">
+import { ElMessageBox } from 'element-plus'
+import modal from '@/plugins/modal.js'
+import { $if(replaceDto.ShowBtnExport) export${genTable.BusinessName}, $end $if(replaceDto.ShowBtnAudit) audit, $end $if(genTable.TplCategory == "tree") ${tool.FirstLowerCase(genTable.BusinessName)}TreeList $else ${tool.FirstLowerCase(genTable.BusinessName)}List $end, del${genTable.BusinessName} } from '@/api/business/${options.SubNamespace}/${tool.FirstLowerCase(genTable.BusinessName)}.js'
+$if(replaceDto.ShowBtnAdd)
+import AddDialog from "./components/AddDialog.vue";
+$end
+$if(replaceDto.ShowBtnEdit)
+import EditDialog from "./components/EditDialog.vue";
+$end
+$if(replaceDto.ShowBtnView)
+import DetailDialog from "./components/DetailDialog.vue";
+$end
+$if(replaceDto.ShowBtnImport)
+import UploadDialog from "./components/UploadDialog.vue";
+$end
+
+$if(replaceDto.ShowBtnAdd)
+const AddDialogVisible = ref(false);
+$end
+$if(replaceDto.ShowBtnEdit)
+const EditDialogVisible = ref(false);
+const EditDialogRow = ref({});
+$end
+$if(replaceDto.ShowBtnView)
+const DetailDialogVisible = ref(false);
+const DetailDialogRow = ref({});
+$end
+$if(replaceDto.ShowBtnImport)
+const UploadDialogVisible = ref(false);
+$end
+
+const { proxy } = getCurrentInstance()
+
+// 选中categoryId数组数组
+const ids = ref([])
+// 非单选禁用
+const single = ref(true)
+// 非多个禁用
+const multiple = ref(true)
+// 显示搜索条件
+const showSearch = ref(true)
+// 数据列表
+const dataList = ref([])
+// 总记录数
+const total = ref(0)
+// 是否加载
+const loading = ref(true)
+$if(genTable.TplCategory == "tree")
+// 是否展开，默认全部折叠
+const isExpandAll = ref(false)
+const refreshTable = ref(true)
+$end
+
+const data = reactive({
+  form: {},
+  queryParams: {
+$if(genTable.TplCategory != "tree")
+    pageNum: 1,
+    pageSize: 10
+$end
+  },
+})
+const { queryParams } = toRefs(data)
+
+
+// 业务参数
+
+
+// 业务方法
+
+$foreach(item in genTable.Columns)
+$if(item.IsInit != true)
+$if((item.HtmlType == "radio" || item.HtmlType == "select" || item.HtmlType == "checkbox") && item.DictType == "")
+// ${item.ColumnComment}选项列表
+const ${item.CsharpFieldFl}Options = ref([
+{ dictLabel: '', dictValue: '1' },
+{ dictLabel: '', dictValue: '2' },
+]);
+$end
+$if(item.DictType != "")
+// 字典获取
+const ${item.DictType} = ref([]);
+async function get${item.DictType}() {
+  await proxy.getDicts('${item.DictType}').then((res) => {
+    ${item.DictType}.value = res.data
+  })
+}
+get${item.DictType}()
+$end
+$end
+$end
+
+
+
+
+//基础方法
+
+$if(genTable.TplCategory == "tree")
+// 树形搜索
+function selectChild(str, tag, res, parent) {
+  isExpandAll.value = true
+  for (let item of tag) {
+    if (item.${tool.FirstLowerCase(genTable.BusinessName)}Name.indexOf(str) !== -1) {
+      if (parent) {
+        res.push(parent)
+      } else {
+        res.push(item)
+      }
+    } else if (item.children && item.children.length) {
+      selectChild(str, item.children, res, parent || item)
+    }
+  }
+}
+
+// 查询数据
+function getList() {
+  loading.value = true
+  ${tool.FirstLowerCase(genTable.BusinessName)}TreeList(queryParams.value).then((res) => {
+    if (res.code == 200) {
+      loading.value = false
+
+      if (queryParams.value.${tool.FirstLowerCase(genTable.BusinessName)}Name == undefined) {
+        isExpandAll.value = false
+        dataList.value = res.data
+      } else {
+        dataList.value = []
+        selectChild(queryParams.value.${tool.FirstLowerCase(genTable.BusinessName)}Name, res.data, dataList.value)
+      }
+
+      total.value = res.data.totalNum
+    }
+  })
+}
+// 折叠/展开
+function toggleExpandAll() {
+  refreshTable.value = false
+  isExpandAll.value = !isExpandAll.value
+  nextTick(() => {
+    refreshTable.value = true
+  })
+}
+$else
+// 查询数据
+function getList() {
+  loading.value = true
+  ${tool.FirstLowerCase(genTable.BusinessName)}List(queryParams.value).then((res) => {
+    if (res.code == 200) {
+      loading.value = false
+      dataList.value = res.data.result
+      total.value = res.data.totalNum
+    }
+  })
+}
+$end
+
+// 多选框选中数据
+function handleSelectionChange(selection) {
+  ids.value = selection.map((item) => item.${tool.FirstLowerCase(genTable.BusinessName)}Id)
+  single.value = selection.length != 1
+  multiple.value = !selection.length
+}
+
+/** 重置查询操作 */
+function resetQuery() {
+  proxy.resetForm('queryForm')
+  handleQuery()
+}
+/** 搜索按钮操作 */
+function handleQuery() {
+  getList()
+}
+$if(replaceDto.ShowBtnDelete)
+/** 删除按钮操作 */
+function handleDelete(row) {
+  const Ids = row.${tool.FirstLowerCase(genTable.BusinessName)}Id || ids.value
+
+    ElMessageBox.confirm("是否确认删除？", "系统提示", {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: "warning",
+    })
+    .then(function () {
+      return del${genTable.BusinessName}(Ids)
+    })
+    .then(() => {
+      handleQuery()
+      modal.msgSuccess("删除成功")
+    })
+    .catch(() => { })
+}
+$end
+
+$if(replaceDto.ShowBtnExport)
+/** 导出按钮操作 */
+function handleExport(row) {
+  const Ids = row.${tool.FirstLowerCase(genTable.BusinessName)}Id || ids.value
+  const name = ref("所有")
+
+  if (Ids.length != 0) {
+    let str = ''
+    for (const key in Ids) {
+      str += Ids[key] + ','
+    }
+    str = str.slice(0, str.length - 1)
+    queryParams.value.ids = str
+    name.value = "选中"
+  }
+
+  ElMessageBox.confirm('是否确认导出' + name.value + '数据?', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(function () {
+      return export${genTable.BusinessName}(queryParams.value)
+    })
+    .then((response) => {
+      proxy.download(response.data.path)
+    })
+}
+$end
+
+$if(replaceDto.ShowBtnAudit)
+/** 审核按钮操作 */
+const AuditData = reactive({
+  ids: null,
+  ${tool.FirstLowerCase(genTable.BusinessName)}AuditStatus: null,
+})
+function handleAudit(row) {
+  const Ids = row.${tool.FirstLowerCase(genTable.BusinessName)}Id || ids.value.toString()
+
+  ElMessageBox.confirm("是否通过审核？", "系统提示", {
+    distinguishCancelAndClose: true,
+    confirmButtonText: '通过',
+    cancelButtonText: '驳回',
+    type: "warning",
+  })
+    .then(async () => {
+      AuditData.${tool.FirstLowerCase(genTable.BusinessName)}AuditStatus = 2
+      AuditData.ids = Ids
+      Audit()
+    })
+    .catch((action) => {
+      if (action == 'cancel') {
+        AuditData.${tool.FirstLowerCase(genTable.BusinessName)}AuditStatus = 3
+        AuditData.ids = Ids
+        Audit()
+        // console.log("拒绝");
+      }
+      else {
+        // console.log("关闭");
+      }
+    })
+}
+async function Audit() {
+  audit(AuditData).then((res) => {
+    if (res.code == 200) {
+      handleQuery()
+      ElMessageBox.alert(res.data, "审核信息", {
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: "确定",
+      });
+    } else {
+      ElMessage.error(res.data);
+    }
+  })
+}
+$end
+
+$if(replaceDto.ShowBtnEdit)
+// 修改
+function handleUpdate(row) {
+  EditDialogVisible.value = true
+  EditDialogRow.value = row
+}
+$end
+
+$if(replaceDto.ShowBtnView)
+// 详情
+function handleDetail(row) {
+  DetailDialogVisible.value = true
+  DetailDialogRow.value = row
+}
+$end
+
+handleQuery()
+</script>

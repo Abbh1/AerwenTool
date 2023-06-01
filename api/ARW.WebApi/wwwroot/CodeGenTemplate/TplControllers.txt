@@ -1,0 +1,261 @@
+using Infrastructure;
+using Infrastructure.Attribute;
+using Infrastructure.Enums;
+using Infrastructure.Model;
+using Mapster;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using ARW.Admin.WebApi.Extensions;
+using ARW.Admin.WebApi.Filters;
+using ARW.Common;
+using ARW.Model.Dto.Business.${genTable.moduleName};
+using ARW.Service.Business.IBusinessService.${genTable.moduleName};
+using ARW.Admin.WebApi.Controllers;
+using ARW.Model.Models.Business.${genTable.moduleName};
+using ARW.Model.Vo.Business.${genTable.moduleName};
+using Microsoft.AspNetCore.Authorization;
+using ARW.Admin.WebApi.Framework;
+
+
+namespace ${options.ApiControllerNamespace}.Controllers.Business.${genTable.moduleName}
+{
+    /// <summary>
+    /// ${genTable.FunctionName}控制器
+    /// </summary>
+    [Verify]
+    [Route("business/[controller]")]
+    public class ${replaceDto.ModelTypeName}Controller : BaseController
+    {
+        private readonly I${replaceDto.ModelTypeName}Service _${replaceDto.ModelTypeName}Service;
+
+        /// <summary>
+        /// 依赖注入
+        /// </summary>
+        /// <param name="${replaceDto.ModelTypeName}Service">${genTable.FunctionName}服务</param>
+        public ${replaceDto.ModelTypeName}Controller(I${replaceDto.ModelTypeName}Service ${replaceDto.ModelTypeName}Service)
+        {
+            _${replaceDto.ModelTypeName}Service = ${replaceDto.ModelTypeName}Service;
+        }
+
+
+$if(genTable.TplCategory == "tree")
+        /// <summary>
+        /// 获取${genTable.FunctionName}树形列表
+        /// </summary>
+        /// <param name="parm">查询参数</param>
+        /// <returns></returns>
+        [HttpGet("get${replaceDto.ModelTypeName}TreeList")]
+        [ActionPermissionFilter(Permission = "${replaceDto.PermissionPrefix}:treelist")]
+        public async Task<IActionResult> Get${replaceDto.ModelTypeName}List([FromQuery] ${replaceDto.ModelTypeName}QueryDto parm)
+        {
+            var res = await _${replaceDto.ModelTypeName}Service.Get${replaceDto.ModelTypeName}TreeList(parm);
+            res ??= new List<${replaceDto.ModelTypeName}Vo>();
+				
+            return SUCCESS(res);
+        }
+$else
+        /// <summary>
+        /// 获取${genTable.FunctionName}列表
+        /// </summary>
+        /// <param name="parm">查询参数</param>
+        /// <returns></returns>
+        [HttpGet("get${replaceDto.ModelTypeName}List")]
+        [ActionPermissionFilter(Permission = "${replaceDto.PermissionPrefix}:list")]
+        public async Task<IActionResult> Get${replaceDto.ModelTypeName}List([FromQuery] ${replaceDto.ModelTypeName}QueryDto parm)
+        {
+            var res = await _${replaceDto.ModelTypeName}Service.Get${replaceDto.ModelTypeName}List(parm);
+            return SUCCESS(res);
+        }
+$end
+
+        /// <summary>
+        /// 添加或修改${genTable.FunctionName}
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+        [HttpPost("addOrUpdate${replaceDto.ModelTypeName}")]
+        [ActionPermissionFilter(Permission = "${replaceDto.PermissionPrefix}:addOrUpdate")]
+        [Log(Title = "添加或修改${genTable.FunctionName}", BusinessType = BusinessType.ADDORUPDATE)]
+        public async Task<IActionResult> AddOrUpdate${replaceDto.ModelTypeName}([FromBody] ${replaceDto.ModelTypeName}Dto parm)
+        {
+            if (parm == null) { throw new CustomException("请求参数错误"); }
+
+	var modal = new ${replaceDto.ModelTypeName}();
+            if (parm.${replaceDto.ModelTypeName}Id != 0) modal = parm.Adapt<${replaceDto.ModelTypeName}>().ToUpdate(HttpContext);
+            else modal = parm.Adapt<${replaceDto.ModelTypeName}>().ToCreate(HttpContext);
+
+            var res = await _${replaceDto.ModelTypeName}Service.AddOrUpdate${replaceDto.ModelTypeName}(modal);
+            return SUCCESS(res);
+        }
+
+$if(replaceDto.ShowBtnDelete)
+        /// <summary>
+        /// 删除${genTable.FunctionName}
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete("{ids}")]
+        [ActionPermissionFilter(Permission = "${replaceDto.PermissionPrefix}:delete")]
+        [Log(Title = "${genTable.FunctionName}删除", BusinessType = BusinessType.DELETE)]
+        public IActionResult Delete(string ids)
+        {
+            long[] idsArr = Tools.SpitLongArrary(ids);
+            if (idsArr.Length <= 0) { return ToResponse(ApiResult.Error($"删除失败Id 不能为空")); }
+            var response = _${replaceDto.ModelTypeName}Service.Delete(idsArr);
+            return SUCCESS("删除成功!");
+        }
+$end
+		
+$if(replaceDto.ShowBtnImport)
+		/// <summary>
+        /// 导入${genTable.FunctionName}
+        /// </summary>
+        /// <param name="formFile">使用IFromFile必须使用name属性否则获取不到文件</param>
+        /// <param name="updateSupport">是否需要更新</param>
+        /// <returns></returns>
+        [HttpPost("importData")]
+        [Log(Title = "${genTable.FunctionName}导入", BusinessType = BusinessType.IMPORT, IsSaveRequestData = false, IsSaveResponseData = false)]
+        [ActionPermissionFilter(Permission = "business:${replaceDto.PermissionPrefix}:import")]
+        public async Task<IActionResult> ImportExcel([FromForm(Name = "file")] IFormFile formFile,bool updateSupport)
+        {
+            var isUpdateSupport = updateSupport;
+            IEnumerable<${replaceDto.ModelTypeName}Vo> parm = ExcelHelper<${replaceDto.ModelTypeName}Vo>.ImportData(formFile.OpenReadStream());
+
+            var i = 0;
+            var msgList = new List<string>();
+            foreach (${replaceDto.ModelTypeName}Vo item in parm)
+            {
+                i++;
+                var ${replaceDto.ModelTypeName} = await _${replaceDto.ModelTypeName}Service.HandleImportData(item);
+                var modal = ${replaceDto.ModelTypeName}.Adapt<${replaceDto.ModelTypeName}>().ToCreate(HttpContext);
+                var user = JwtUtil.GetLoginUser(App.HttpContext).UserName;
+                var msg = await _${replaceDto.ModelTypeName}Service.ImportExcel(modal,i,isUpdateSupport,user);
+                msgList.Add(msg);
+            }
+
+            return SUCCESS(msgList.ToArray());
+        }
+
+
+        /// <summary>
+        /// ${genTable.FunctionName}导入模板下载
+        /// </summary>
+        /// <returns></returns> 
+        [HttpGet("importTemplate")]
+        [Log(Title = "${genTable.FunctionName}模板", BusinessType = BusinessType.EXPORT, IsSaveRequestData = false, IsSaveResponseData = false)]
+        [AllowAnonymous]
+        public IActionResult ImportTemplateExcel()
+        {
+            List<${replaceDto.ModelTypeName}Vo> ${replaceDto.ModelTypeName} = new List<${replaceDto.ModelTypeName}Vo>();
+            MemoryStream stream = new MemoryStream();
+
+            // 示例数据
+$if(genTable.TplCategory != "tree")
+            var values = new List<string>() { "111", "222", "333" };
+            string sFileName = DownloadImportTemplate(${replaceDto.ModelTypeName}, stream, "${genTable.FunctionName}导入模板", values);
+$else
+            var allValues = new List<List<string>>();
+            var values = new List<string>() { "111", "222", "333" };
+            var values2 = new List<string>() { "444", "555", "666" };
+            allValues.Add(values);
+            allValues.Add(values2);
+            string sFileName = DownloadImportTemplate(${replaceDto.ModelTypeName}, stream, "${genTable.FunctionName}导入模板", allValues);
+$end
+
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{sFileName}");
+        }
+$end
+		
+$if(replaceDto.ShowBtnExport)
+		/// <summary>
+        /// 导出${genTable.FunctionName}
+        /// </summary>
+        /// <returns></returns>
+        [Log(Title = "${genTable.FunctionName}导出", BusinessType = BusinessType.EXPORT, IsSaveResponseData = false)]
+        [HttpGet("export${replaceDto.ModelTypeName}")]
+        [ActionPermissionFilter(Permission = "${replaceDto.PermissionPrefix}:export")]
+        public async Task<IActionResult> ExportExcel([FromQuery] ${replaceDto.ModelTypeName}QueryDto parm)                  
+        {
+$if(genTable.TplCategory == "tree")
+            var list = await _${replaceDto.ModelTypeName}Service.Get${replaceDto.ModelTypeName}List(parm);
+            var data = list;
+
+            // 选中数据
+            if (!string.IsNullOrEmpty(parm.ids))
+            {
+                int[] idsArr = Tools.SpitIntArrary(parm.ids);
+                var selectDataList = new List<${replaceDto.ModelTypeName}Vo>();
+                foreach (var item in idsArr)
+                {
+                    var select_data = data.Where(s => s.${replaceDto.ModelTypeName}Id == item).First();
+                    selectDataList.Add(select_data);
+
+                    // 查看当前数据有没有子级
+                    var new${replaceDto.ModelTypeName}s = data.FindAll(delegate (${replaceDto.ModelTypeName}Vo ${tool.FirstLowerCase(replaceDto.ModelTypeName)})
+                    {
+                        string[] parent${replaceDto.ModelTypeName}Id = ${tool.FirstLowerCase(replaceDto.ModelTypeName)}.${replaceDto.ModelTypeName}AncestralGuid.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                        return parent${replaceDto.ModelTypeName}Id.Contains(select_data.${replaceDto.ModelTypeName}Guid.ToString());
+                    });
+                    string[] ${tool.FirstLowerCase(replaceDto.ModelTypeName)}Arr = new${replaceDto.ModelTypeName}s.Select(x => x.${replaceDto.ModelTypeName}Guid.ToString()).ToArray();
+                    var ancestorArr = data.Where(s => ${tool.FirstLowerCase(replaceDto.ModelTypeName)}Arr.Contains(s.${replaceDto.ModelTypeName}Guid.ToString())).ToList();
+                    selectDataList.AddRange(ancestorArr);
+                }
+                data = selectDataList;
+            }
+$else
+            parm.PageSize = 10000;
+            var list = await _${replaceDto.ModelTypeName}Service.Get${replaceDto.ModelTypeName}List(parm);
+            var data = list.Result;
+
+            // 选中数据
+            if (!string.IsNullOrEmpty(parm.ids))
+            {
+                int[] idsArr = Tools.SpitIntArrary(parm.ids);
+                var selectDataList = new List<${replaceDto.ModelTypeName}Vo>();
+                foreach (var item in idsArr)
+                {
+                    var select_data = data.Where(s => s.${replaceDto.ModelTypeName}Id == item).First();
+                    selectDataList.Add(select_data);
+                }
+                data = selectDataList;
+            }
+$end
+
+            
+
+            // 导出数据处理
+            var handleData = await _${replaceDto.ModelTypeName}Service.HandleExportData(data);
+
+            string sFileName = ExportExcel(handleData, "${replaceDto.ModelTypeName}", "${genTable.FunctionName}列表");
+            return SUCCESS(new { path = "/export/" + sFileName, fileName = sFileName });
+        }
+$end
+
+$if(replaceDto.ShowBtnAudit)
+		/// <summary>
+        /// 审核${genTable.FunctionName}
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut("audit")]
+        [ActionPermissionFilter(Permission = "${replaceDto.PermissionPrefix}:audit")]
+        [Log(Title = "审核${genTable.FunctionName}", BusinessType = BusinessType.AUDIT)]
+        public async Task<IActionResult> Audit${replaceDto.ModelTypeName}([FromBody] ${replaceDto.ModelTypeName}AuditDto param)
+        {
+            var user = JwtUtil.GetLoginUser(App.HttpContext);
+            int[] idsArr = Tools.SpitIntArrary(param.ids);
+            if (idsArr.Length <= 0) { return ToResponse(ApiResult.Error($"审核失败 Id 不能为空")); }
+
+            var msgList = new List<string>();
+            foreach (var item in idsArr)
+            {
+                var msg = await _${replaceDto.ModelTypeName}Service.Audit(item, param.${replaceDto.ModelTypeName}AuditStatus, user.UserId);
+                msgList.Add(msg);
+            }
+
+            return SUCCESS(msgList.ToArray());
+        }
+$end
+
+
+
+    }
+}

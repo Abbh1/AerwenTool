@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<AssemblyName>ARW.Model</AssemblyName>
+		<RootNamespace>ARW.Model</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Enum\**" />
+	  <EmbeddedResource Remove="Enum\**" />
+	  <None Remove="Enum\**" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="6.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="SqlSugarCoreNoDrive" Version="5.1.3.24" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ARW.Common\ARW.Common.csproj" />
+  </ItemGroup>
+
+</Project>

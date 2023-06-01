@@ -1,0 +1,58 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using ${options.ModelsNamespace}.Models.Business.${genTable.moduleName};
+
+namespace ${options.DtosNamespace}.Dto.Business.${genTable.moduleName}
+{
+    /// <summary>
+    /// ${genTable.FunctionName}输入对象
+    /// </summary>
+    public class ${replaceDto.ModelTypeName}Dto
+    {
+$foreach(item in genTable.Columns)
+$if(item.IsInit != true)
+$if((item.IsInsert || item.IsEdit || item.IsPk || item.IsIncrement))
+$if(item.IsRequired)
+$if(item.IsPk != true)
+        [Required(ErrorMessage = "${item.ColumnComment}不能为空")]
+$end
+$end
+        public $item.CsharpType$item.RequiredStr $item.CsharpField { get; set; }
+$end
+$end
+$end
+    }
+
+
+    /// <summary>
+    /// ${genTable.FunctionName}查询对象
+    /// </summary>
+    public class ${replaceDto.ModelTypeName}QueryDto : PagerInfo 
+    {
+$foreach(item in genTable.Columns)
+$if(item.IsQuery && item.htmlType == "datetime")
+        public DateTime? BeginTime { get; set; }
+        public DateTime? EndTime { get; set; }
+$elseif(item.IsQuery)
+        public $item.CsharpType$if(item.CsharpType != "string")?$end $item.CsharpField { get; set; }
+$end
+$end
+    
+        public string ids { get; set; }
+    }
+
+
+$if(replaceDto.ShowBtnAudit)
+		/// <summary>
+        /// 审核对象
+        /// </summary>
+        public class ${replaceDto.ModelTypeName}AuditDto
+        {
+            public int ${replaceDto.ModelTypeName}AuditStatus { get; set; }
+            public string ids { get; set; }
+        }
+$end
+
+
+}

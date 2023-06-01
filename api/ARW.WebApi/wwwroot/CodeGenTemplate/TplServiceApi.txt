@@ -1,0 +1,154 @@
+using Infrastructure.Attribute;
+using Microsoft.AspNetCore.Http;
+using SqlSugar;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using ARW.Model;
+using ARW.Repository;
+using ARW.Repository.Business.${genTable.moduleName};
+using ARW.Service.Api.IBusinessService.${genTable.moduleName};
+using ARW.Model.Dto.Api.${genTable.moduleName};
+using ARW.Model.Models.Business.${genTable.moduleName};
+using ARW.Model.Vo.Api.${genTable.moduleName};
+
+namespace ARW.Service.Api.BusinessService.${genTable.moduleName}
+{
+    /// <summary>
+    /// ${genTable.FunctionName}接口实现类
+    /// </summary>
+    [AppService(ServiceType = typeof(I${replaceDto.ModelTypeName}ServiceApi), ServiceLifetime = LifeTime.Transient)]
+    public class ${replaceDto.ModelTypeName}ServiceImplApi : BaseService<${replaceDto.ModelTypeName}>, I${replaceDto.ModelTypeName}ServiceApi
+    {
+        private readonly ${replaceDto.ModelTypeName}Repository _${replaceDto.ModelTypeName}Repository;
+
+        public ${replaceDto.ModelTypeName}ServiceImplApi(${replaceDto.ModelTypeName}Repository ${replaceDto.ModelTypeName}Repository)
+        {
+            this._${replaceDto.ModelTypeName}Repository = ${replaceDto.ModelTypeName}Repository;
+        }
+
+	#region Api接口代码
+	
+		
+$if(genTable.TplCategory == "tree")
+		/// <summary>
+        /// 查询${genTable.FunctionName}树形列表(Api)
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+		public async Task<List<${replaceDto.ModelTypeName}VoApi>> Get${replaceDto.ModelTypeName}TreeListApi(${replaceDto.ModelTypeName}QueryDtoApi parm)
+		        {
+            //开始拼装查询条件d
+            var predicate = Expressionable.Create<${replaceDto.ModelTypeName}>();
+
+$foreach(column in genTable.Columns)
+$if(column.IsQuery)
+$if(column.CsharpType == "string")
+            predicate = predicate.AndIF(!string.IsNullOrEmpty(parm.${column.CsharpField}), ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$elseif(column.CsharpType == "DateTime")
+            predicate = predicate.AndIF(parm.Begin${column.CsharpField} == null, it => it.${column.CsharpField} >= DateTime.Now.AddDays(-1));
+            predicate = predicate.AndIF(parm.Begin${column.CsharpField} != null, it => it.${column.CsharpField} >= parm.Begin${column.CsharpField} && it.${column.CsharpField} <= parm.End${column.CsharpField});
+$elseif(column.CsharpType == "int" || column.CsharpType == "long")
+            predicate = predicate.AndIF(parm.${column.CsharpField} != null, ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$end
+$end
+${end}
+            var query = _${replaceDto.ModelTypeName}Repository
+                .Queryable()
+                .Where(predicate.ToExpression())
+				.LeftJoin<${replaceDto.ModelTypeName}>((s, c) => s.${genTable.Options.TreeParentCode} == c.${replaceDto.ModelTypeName}Guid)
+$if(genTable.Options.SortField != "" && genTable.Options.SortField != null)
+                .OrderBy(s => s.${genTable.Options.SortField},OrderByType.${genTable.Options.SortType})
+$end
+                .Select((s,c) => new ${replaceDto.ModelTypeName}VoApi
+                {
+   $foreach(item in genTable.Columns)
+   $if(item.IsInit != true)
+   $if((item.IsList || item.IsPk))
+   ${item.CsharpField} = s.${item.CsharpField},
+   $end
+   $end
+   $end
+   ParentName = c.${replaceDto.ModelTypeName}Name,
+});
+
+        return await query.ToTreeAsync(it => it.Children, it => it.${genTable.Options.TreeParentCode}, 0);
+        }
+$else
+		/// <summary>
+        /// 查询${genTable.FunctionName}列表(Api)
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+		public async Task<PagedInfo<${replaceDto.ModelTypeName}VoApi>> Get${replaceDto.ModelTypeName}ListApi(${replaceDto.ModelTypeName}QueryDtoApi parm)
+        {
+            //开始拼装查询条件d
+            var predicate = Expressionable.Create<${replaceDto.ModelTypeName}>();
+
+$foreach(column in genTable.Columns)
+$if(column.IsQuery)
+$if(column.CsharpType == "string")
+            predicate = predicate.AndIF(!string.IsNullOrEmpty(parm.${column.CsharpField}), ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$elseif(column.CsharpType == "DateTime")
+            predicate = predicate.AndIF(parm.Begin${column.CsharpField} == null, it => it.${column.CsharpField} >= DateTime.Now.AddDays(-1));
+            predicate = predicate.AndIF(parm.Begin${column.CsharpField} != null, it => it.${column.CsharpField} >= parm.Begin${column.CsharpField} && it.${column.CsharpField} <= parm.End${column.CsharpField});
+$elseif(column.CsharpType == "int" || column.CsharpType == "long")
+            predicate = predicate.AndIF(parm.${column.CsharpField} != null, ${codeTool.QueryExp(column.CsharpField, column.QueryType)};
+$end
+$end
+${end}
+            var query = _${replaceDto.ModelTypeName}Repository
+                .Queryable()
+                .Where(predicate.ToExpression())
+$if(genTable.Options.SortField != "" && genTable.Options.SortField != null)
+                .OrderBy(s => s.${genTable.Options.SortField},OrderByType.Desc)
+$end
+                .Select(s => new ${replaceDto.ModelTypeName}VoApi
+                {
+   $foreach(item in genTable.Columns)
+   $if(item.IsInit != true)
+   $if((item.IsList || item.IsPk))
+   ${item.CsharpField} = s.${item.CsharpField},
+   $end
+   $end
+   $end
+});
+                
+
+		return await query.ToPageAsync(parm);
+        }
+$end
+
+	/// <summary>
+        /// 查询${genTable.FunctionName}详情(Api)
+        /// </summary>
+        /// <param name="parm"></param>
+        /// <returns></returns>
+		public Task<string> Get${replaceDto.ModelTypeName}Details(${replaceDto.ModelTypeName}DtoApi parm)
+        {
+
+            var query = _${replaceDto.ModelTypeName}Repository
+                .Queryable()
+                .Where(s => s.${replaceDto.ModelTypeName}Guid == parm.${replaceDto.ModelTypeName}Guid)
+                .Select(s => new ${replaceDto.ModelTypeName}ApiDetailsVo
+                {
+   $foreach(item in genTable.Columns)
+   $if(item.IsInit != true)
+   $if((item.IsList || item.IsPk))
+   ${item.CsharpField} = s.${item.CsharpField},
+   $end
+   $end
+   $end
+}).Take(1);
+                
+
+		return query.ToJsonAsync();
+		}
+
+	
+#endregion
+
+    }
+}

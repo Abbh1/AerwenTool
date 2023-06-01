@@ -1,0 +1,755 @@
+﻿<Page
+    x:Class="CyanDesignDemo.View.Business.PageCreateTable"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:gen="clr-namespace:CyanDesignDemo.ViewModel.Business.Gen"
+    xmlns:local="clr-namespace:CyanDesignDemo.View.Business"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="PageCreateTable"
+    d:DataContext="{d:DesignInstance Type=gen:CreateTableViewModel}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Page.Resources>
+
+    <Grid Background="White">
+
+        <!--  跳转页面  -->
+        <Frame x:Name="CreateTableFrame" Panel.ZIndex="1" />
+
+        <materialDesign:DialogHost
+            Height="Auto"
+            DialogContentUniformCornerRadius="20"
+            DialogTheme="Inherit"
+            IsOpen="{Binding BaseFiledTemplateFromValue.IsShow}"
+            RenderTransformOrigin="0.5,0.42">
+
+            <TabControl
+                x:Name="TabControler"
+                Width="Auto"
+                materialDesign:ColorZoneAssist.Foreground="DeepSkyBlue"
+                materialDesign:ColorZoneAssist.Mode="Custom">
+
+
+                <TabItem Header="表信息">
+
+                    <Grid Margin="30,50,0,0">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  表信息左边  -->
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Width="Auto" Orientation="Horizontal">
+                                <TextBox
+                                    x:Name="TableAnnotation"
+                                    Width="300"
+                                    Margin="0,0,0,25"
+                                    VerticalAlignment="Center"
+                                    materialDesign:HintAssist.Hint="表注释"
+                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                    FontSize="18"
+                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                    Text="{Binding GenTable.TableAnnotation, UpdateSourceTrigger=PropertyChanged}" />
+                                <Button
+                                    Margin="15,0,0,0"
+                                    Command="{Binding TableTranslationCommand}"
+                                    Content="翻译" />
+
+                            </StackPanel>
+
+                            <StackPanel>
+                                <TextBox
+                                    x:Name="TableName"
+                                    Width="300"
+                                    Margin="0,0,0,25"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    materialDesign:HintAssist.Hint="表名称"
+                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                    FontSize="18"
+                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                    Text="{Binding GenTable.TableName, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+
+                            <StackPanel>
+                                <CheckBox
+                                    x:Name="ClassicModeCheckBox"
+                                    Command="{Binding CanlePreFixCommand}"
+                                    Content="启动表前缀"
+                                    IsChecked="{Binding GenTable.IsTableNamePrefix}"
+                                    IsThreeState="False" />
+                                <TextBox
+                                    Width="300"
+                                    Margin="0,0,0,25"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    materialDesign:HintAssist.Hint="表前缀"
+                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                    FontSize="18"
+                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                    Text="{Binding GenTable.TableNamePrefix, UpdateSourceTrigger=PropertyChanged}"
+                                    Visibility="{Binding GenTable.IsTableNamePrefix, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" />
+                            </StackPanel>
+
+                            <StackPanel>
+                                <CheckBox
+                                    Margin="0,20,0,0"
+                                    Command="{Binding CanlePreFixCommand}"
+                                    Content="启动字段前缀"
+                                    IsChecked="{Binding GenTable.IsTablePrefix}"
+                                    IsThreeState="False" />
+                                <TextBox
+                                    Width="300"
+                                    Margin="0,0,0,25"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    materialDesign:HintAssist.Hint="字段前缀"
+                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                    FontSize="18"
+                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                    Text="{Binding GenTable.TablePrefix, UpdateSourceTrigger=PropertyChanged}"
+                                    Visibility="{Binding GenTable.IsTablePrefix, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" />
+                            </StackPanel>
+
+                            <Button
+                                Width="200"
+                                Margin="0,15,0,0"
+                                HorizontalAlignment="Left"
+                                Click="Button_Click"
+                                Content="下一步" />
+
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Left">
+                            <StackPanel Width="400">
+
+                                <ComboBox
+                                    x:Name="comboBox"
+                                    Margin="0,0,0,55"
+                                    materialDesign:HintAssist.HelperText="${businessFiled}是用于替换的字段"
+                                    materialDesign:HintAssist.HelperTextFontSize="13"
+                                    materialDesign:HintAssist.Hint="模板配置"
+                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                    DisplayMemberPath="BaseFiledTemplateName"
+                                    FontSize="16"
+                                    ItemsSource="{Binding BaseFiledTemplateList}"
+                                    SelectedValue="{Binding SelectedBaseFiledTemplate, Mode=TwoWay}"
+                                    Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+
+                                <TextBox
+                                    Height="350"
+                                    VerticalAlignment="Top"
+                                    AcceptsReturn="True"
+                                    FontSize="18"
+                                    IsEnabled="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextBoxEnabledComboBox}"
+                                    IsReadOnly="True"
+                                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                    Text="{Binding BaseFiledTemplateValue.BaseFiledTemplateContent}"
+                                    TextWrapping="Wrap"
+                                    VerticalScrollBarVisibility="Auto" />
+
+                            </StackPanel>
+
+                        </StackPanel>
+
+                    </Grid>
+
+                </TabItem>
+
+
+                <TabItem Header="字段">
+
+                    <Grid Margin="30,20,0,0">
+                        <StackPanel>
+
+                            <ScrollViewer
+                                Width="Auto"
+                                Height="650"
+                                VerticalScrollBarVisibility="Visible">
+
+                                <StackPanel>
+
+                                    <!--  在线翻译盒子  -->
+                                    <StackPanel Margin="0,0,0,20">
+
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon
+                                                Width="30"
+                                                Height="30"
+                                                Margin="0,0,10,0"
+                                                Kind="TranslateVariant" />
+                                            <TextBlock
+                                                Margin="0,0,0,20"
+                                                FontSize="18"
+                                                Text="在线翻译" />
+                                        </StackPanel>
+
+
+                                        <StackPanel Margin="40,0,0,0" Orientation="Horizontal">
+                                            <TextBox
+                                                Width="300"
+                                                VerticalAlignment="Top"
+                                                materialDesign:HintAssist.HelperText="请输入您需要翻译的文字"
+                                                materialDesign:HintAssist.HelperTextFontSize="16"
+                                                materialDesign:HintAssist.Hint="原文"
+                                                FontSize="16"
+                                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                                Text="{Binding Translate.TranslationText}" />
+
+                                            <Button
+                                                Margin="30,0"
+                                                Command="{Binding TranslateFiledCommand}"
+                                                Content="翻译" />
+
+                                            <TextBox
+                                                Width="300"
+                                                VerticalAlignment="Top"
+                                                materialDesign:HintAssist.HelperTextFontSize="16"
+                                                materialDesign:HintAssist.Hint="翻译结果"
+                                                FontSize="16"
+                                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                                Text="{Binding Translate.TranslationResults}" />
+                                        </StackPanel>
+
+                                    </StackPanel>
+
+
+                                    <!--  设置字段  -->
+                                    <StackPanel Margin="0,50,0,20">
+
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon
+                                                Width="30"
+                                                Height="30"
+                                                Margin="0,0,10,0"
+                                                Kind="CogTransferOutline" />
+                                            <TextBlock
+                                                Margin="0,0,0,20"
+                                                FontSize="18"
+                                                Text="设置字段" />
+                                        </StackPanel>
+
+
+                                        <!--  属性  -->
+                                        <StackPanel
+                                            Width="Auto"
+                                            Margin="40,0,0,0"
+                                            HorizontalAlignment="Left">
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBox
+                                                    Width="300"
+                                                    Margin="0,0,40,25"
+                                                    VerticalAlignment="Center"
+                                                    materialDesign:HintAssist.Hint="字段名称(列名)"
+                                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                                    FontSize="18"
+                                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                                    Text="{Binding GenField.FiledName, UpdateSourceTrigger=PropertyChanged}" />
+                                                <TextBox
+                                                    Width="300"
+                                                    Margin="0,0,30,25"
+                                                    VerticalAlignment="Center"
+                                                    materialDesign:HintAssist.Hint="字段注释"
+                                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                                    FontSize="18"
+                                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                                    Text="{Binding GenField.FiledAnnotate, UpdateSourceTrigger=PropertyChanged}" />
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal">
+
+                                                <ComboBox
+                                                    x:Name="ComboBoxType"
+                                                    MinWidth="130"
+                                                    Margin="0,0,40,0"
+                                                    materialDesign:ColorZoneAssist.Mode="SecondaryLight"
+                                                    materialDesign:HintAssist.Hint="字段类型"
+                                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                                    FontSize="18"
+                                                    SelectedValue="{Binding SelectedFileType, Mode=TwoWay}"
+                                                    SelectedValuePath="Content"
+                                                    Style="{StaticResource MaterialDesignFloatingHintComboBox}">
+                                                    <ComboBoxItem Content="varchar" />
+                                                    <ComboBoxItem Content="int" />
+                                                    <ComboBoxItem Content="bigint" />
+                                                    <ComboBoxItem Content="tinyint" />
+                                                    <ComboBoxItem Content="float" />
+                                                    <ComboBoxItem Content="decimal" />
+                                                    <ComboBoxItem Content="text" />
+                                                    <ComboBoxItem Content="longtext" />
+                                                    <ComboBoxItem Content="date" />
+                                                    <ComboBoxItem Content="datetime" />
+                                                </ComboBox>
+
+                                                <TextBox
+                                                    Width="100"
+                                                    Margin="0,0,50,0"
+                                                    VerticalAlignment="Bottom"
+                                                    materialDesign:HintAssist.Hint="大小"
+                                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                                    FontSize="18"
+                                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                                    Text="{Binding GenField.FiledSize, UpdateSourceTrigger=PropertyChanged}" />
+
+
+                                                <TextBox
+                                                    Width="100"
+                                                    Margin="0,0,50,0"
+                                                    VerticalAlignment="Bottom"
+                                                    materialDesign:HintAssist.Hint="小数点"
+                                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                                    FontSize="18"
+                                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                                    Text="{Binding GenField.FiledDecimal, UpdateSourceTrigger=PropertyChanged}" />
+
+                                                <CheckBox
+                                                    x:Name="CheckNull"
+                                                    VerticalAlignment="Bottom"
+                                                    Content="不能为空"
+                                                    FontSize="18"
+                                                    IsChecked="{Binding GenField.IsNull}"
+                                                    IsThreeState="False" />
+
+                                            </StackPanel>
+
+                                        </StackPanel>
+
+                                        <StackPanel Margin="60,30,0,0" HorizontalAlignment="Left">
+                                            <Button
+                                                Width="400"
+                                                Margin="0,0,15,0"
+                                                Command="{Binding AddFiledCommand}"
+                                                Content="添加" />
+                                        </StackPanel>
+
+
+
+                                    </StackPanel>
+
+
+                                    <!--  列表  -->
+                                    <StackPanel Margin="0,40,0,0">
+
+                                        <!--  菜单  -->
+                                        <StackPanel>
+                                            <ToolBarTray>
+                                                <ToolBar ClipToBounds="False" Style="{StaticResource MaterialDesignToolBar}">
+                                                    <Menu>
+                                                        <MenuItem Header="字段列表预览" />
+                                                    </Menu>
+                                                    <Separator />
+
+                                                    <Button Content="{materialDesign:PackIcon Kind=Refresh}" ToolTip="刷新" />
+                                                    <Button
+                                                        Command="{Binding DeleteFiledCommand}"
+                                                        Content="{materialDesign:PackIcon Kind=Delete}"
+                                                        ToolTip="删除" />
+                                                    <Button
+                                                        Command="{Binding EmptyFiledCommand}"
+                                                        Content="{materialDesign:PackIcon Kind=DeleteSweep}"
+                                                        ToolTip="清空" />
+                                                    <Button
+                                                        Command="{Binding MoveUpFiledCommand}"
+                                                        Content="{materialDesign:PackIcon Kind=ArrowUpThick}"
+                                                        ToolTip="上移" />
+                                                    <Button
+                                                        Command="{Binding MoveDownFiledCommand}"
+                                                        Content="{materialDesign:PackIcon Kind=ArrowDownBold}"
+                                                        ToolTip="下移" />
+
+                                                    <Button
+                                                        Margin="100,0,0,0"
+                                                        Command="{Binding CreateFiledCommand}"
+                                                        Content="{materialDesign:PackIcon Kind=DatabaseExport}"
+                                                        ToolTip="点击生成Sql语句" />
+                                                    <TextBlock VerticalAlignment="Center" Text="(点击生成Sql语句,配置了连接语句可直接生成到数据库)" />
+
+                                                </ToolBar>
+                                            </ToolBarTray>
+                                        </StackPanel>
+
+                                        <!--  表格  -->
+                                        <DataGrid
+                                            x:Name="ProjectFilesDataGrid"
+                                            materialDesign:DataGridAssist.SelectedCellBorderBrush="#d3d3d3"
+                                            AutoGenerateColumns="False"
+                                            CanUserAddRows="False"
+                                            ItemsSource="{Binding GenFieldsList, Mode=TwoWay}"
+                                            SelectedItem="{Binding SelectedGenField, Mode=TwoWay}"
+                                            SelectionMode="Extended">
+
+                                            <DataGrid.Columns>
+                                                <!--<DataGridCheckBoxColumn Binding="{Binding IsSelected}" Header="" />-->
+                                                <DataGridTextColumn
+                                                    Width="250"
+                                                    Binding="{Binding FiledName, Mode=TwoWay}"
+                                                    Header="字段名称" />
+                                                <DataGridTextColumn
+                                                    Width="100"
+                                                    Binding="{Binding FiledType, Mode=TwoWay}"
+                                                    Header="字段类型" />
+                                                <DataGridTextColumn
+                                                    Width="100"
+                                                    Binding="{Binding FiledSize, Mode=TwoWay}"
+                                                    Header="大小" />
+                                                <DataGridTextColumn
+                                                    Width="100"
+                                                    Binding="{Binding FiledDecimal, Mode=TwoWay}"
+                                                    Header="小数点" />
+                                                <DataGridTemplateColumn
+                                                    Width="Auto"
+                                                    Header="不能为空"
+                                                    IsReadOnly="True">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox
+                                                                x:Name="CheckNull"
+                                                                VerticalAlignment="Bottom"
+                                                                IsChecked="{Binding IsNull, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                                IsThreeState="False" />
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                                <DataGridTextColumn
+                                                    Width="Auto"
+                                                    Binding="{Binding FiledAnnotate, Mode=TwoWay}"
+                                                    Header="注释" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+                            </ScrollViewer>
+
+                        </StackPanel>
+                    </Grid>
+
+
+                </TabItem>
+
+
+                <TabItem Header="设置">
+
+                    <ScrollViewer
+                        Width="Auto"
+                        Height="650"
+                        VerticalScrollBarVisibility="Hidden">
+
+                        <StackPanel Margin="20,30,0,0">
+
+                            <!--  数据库配置  -->
+                            <StackPanel>
+
+                                <!--  标题  -->
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon
+                                        Width="30"
+                                        Height="30"
+                                        Margin="0,0,10,0"
+                                        Kind="DatabaseCog" />
+                                    <TextBlock
+                                        Margin="0,0,0,20"
+                                        FontSize="18"
+                                        Text="数据库" />
+                                </StackPanel>
+
+                                <StackPanel Margin="40,0,0,0">
+
+                                    <!--  数据库选择  -->
+                                    <TextBlock Margin="0,0,20,0" Text="暂时只支持 Mysql" />
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton
+                                            Content="Mysql"
+                                            IsChecked="{Binding GenVersion.IsMysql, Mode=TwoWay}"
+                                            Style="{StaticResource MaterialDesignDarkRadioButton}" />
+
+                                        <RadioButton
+                                            Margin="20,0,0,0"
+                                            Content="SqlServer"
+                                            IsChecked="{Binding GenVersion.IsSqlserver, Mode=TwoWay}"
+                                            Style="{StaticResource MaterialDesignDarkRadioButton}" />
+                                    </StackPanel>
+
+                                    <!--  配置文件  -->
+                                    <StackPanel Margin="0,30,0,0">
+
+                                        <CheckBox
+                                            VerticalAlignment="Bottom"
+                                            Content="启动数据库配置 (存在根目录的文件 -&gt; dataBase.txt)"
+                                            FontSize="16"
+                                            IsChecked="True"
+                                            IsThreeState="False" />
+
+                                        <StackPanel Margin="0,15,0,0" Orientation="Horizontal">
+                                            <Button
+                                                Margin="0,0,15,0"
+                                                Click="Button_Click_1"
+                                                Content="编辑" />
+                                            <Button
+                                                Margin="0,0,15,0"
+                                                Command="{Binding ConnectToDatabaseCommand}"
+                                                Content="测试连接" />
+                                            <Button
+                                                Margin="0,0,15,0"
+                                                Command="{Binding OpenConnectFilesCommand}"
+                                                Content="手动编辑" />
+                                        </StackPanel>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+
+
+                            </StackPanel>
+
+
+                            <!--  基础字段配置  -->
+                            <StackPanel Margin="0,50,0,0">
+                                <StackPanel>
+
+                                    <!--  标题  -->
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon
+                                            Width="30"
+                                            Height="30"
+                                            Margin="0,0,10,0"
+                                            Kind="FileCogOutline" />
+                                        <TextBlock
+                                            Margin="0,0,0,20"
+                                            FontSize="18"
+                                            Text="基础字段模板配置" />
+                                    </StackPanel>
+
+                                    <Grid>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="7*" />
+                                            <ColumnDefinition Width="3*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel
+                                            Grid.Column="0"
+                                            Margin="40,0,0,0"
+                                            HorizontalAlignment="Left">
+
+                                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+
+                                                <ComboBox
+                                                    Width="300"
+                                                    Margin="0,0,0,35"
+                                                    materialDesign:HintAssist.Hint="模板配置"
+                                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                                    DisplayMemberPath="BaseFiledTemplateName"
+                                                    FontSize="16"
+                                                    ItemsSource="{Binding BaseFiledTemplateList}"
+                                                    SelectedValue="{Binding SelectedBaseFiledTemplate, Mode=TwoWay}"
+                                                    Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+
+                                                <Button
+                                                    Margin="20,0,0,0"
+                                                    Command="{Binding RefreshBaseFiledTemplateCommand}"
+                                                    Style="{StaticResource MaterialDesignIconButton}"
+                                                    ToolTip="刷新">
+                                                    <materialDesign:PackIcon Kind="Refresh" />
+                                                </Button>
+
+                                                <Button
+                                                    Margin="20,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                                                    Content="{materialDesign:PackIcon Kind=Plus,
+                                                                                      Size=22}"
+                                                    Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
+                                                    ToolTip="添加基础字段模板配置" />
+
+                                                <Button
+                                                    Margin="20,0,0,0"
+                                                    Command="{Binding UpdateBaseFiledTemplateCommand}"
+                                                    Content="保存" />
+                                                <Button
+                                                    Margin="20,0,0,0"
+                                                    Command="{Binding DeleteBaseFiledTemplateCommand}"
+                                                    Content="删除" />
+
+                                            </StackPanel>
+
+                                            <TextBox
+                                                Width="700"
+                                                Height="350"
+                                                VerticalAlignment="Top"
+                                                AcceptsReturn="True"
+                                                FontSize="18"
+                                                IsEnabled="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextBoxEnabledComboBox}"
+                                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                                Text="{Binding BaseFiledTemplateValue.BaseFiledTemplateContent}"
+                                                TextWrapping="Wrap"
+                                                VerticalScrollBarVisibility="Auto" />
+
+                                        </StackPanel>
+
+
+                                        <StackPanel Grid.Column="1" Margin="15,0,0,0">
+                                            <TextBlock
+                                                Margin="0,0,0,20"
+                                                FontSize="18"
+                                                FontWeight="Bold"
+                                                Text="模板配置替换说明：" />
+
+                                            <StackPanel Margin="20,0,0,0">
+
+
+                                                <TextBox
+                                                    Margin="0,0,0,10"
+                                                    HorizontalContentAlignment="Left"
+                                                    VerticalContentAlignment="Center"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="15"
+                                                    Foreground="Gray"
+                                                    IsReadOnly="True"
+                                                    Text="${tableName} 表名" />
+
+                                                <TextBox
+                                                    Margin="0,0,0,10"
+                                                    HorizontalContentAlignment="Left"
+                                                    VerticalContentAlignment="Center"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="15"
+                                                    Foreground="Gray"
+                                                    IsReadOnly="True"
+                                                    Text="${tableNamePrefix} 表前缀" />
+
+                                                <TextBox
+                                                    Margin="0,0,0,10"
+                                                    HorizontalContentAlignment="Left"
+                                                    VerticalContentAlignment="Center"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="15"
+                                                    Foreground="Gray"
+                                                    IsReadOnly="True"
+                                                    Text="${tableName} 字段前缀" />
+
+                                                <TextBox
+                                                    Margin="0,0,0,10"
+                                                    HorizontalContentAlignment="Left"
+                                                    VerticalContentAlignment="Center"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="15"
+                                                    Foreground="Gray"
+                                                    IsReadOnly="True"
+                                                    Text="${tableAnnotate} 表注释" />
+
+                                                <TextBox
+                                                    Margin="0,0,0,10"
+                                                    HorizontalContentAlignment="Left"
+                                                    VerticalContentAlignment="Center"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="15"
+                                                    Foreground="Gray"
+                                                    IsReadOnly="True"
+                                                    Text="${tablBusinessFieldList} 业务字段" />
+
+
+
+                                            </StackPanel>
+
+                                        </StackPanel>
+
+                                    </Grid>
+
+                                </StackPanel>
+                            </StackPanel>
+
+                        </StackPanel>
+
+
+                    </ScrollViewer>
+
+                </TabItem>
+
+
+            </TabControl>
+
+            <!--  弹窗内容  -->
+            <materialDesign:DialogHost.DialogContent>
+                <StackPanel Width="600" Margin="16">
+                    <!--  标题  -->
+                    <TextBlock
+                        Margin="0,0,0,30"
+                        FontSize="18"
+                        Text="添加基础字段模板配置" />
+
+
+                    <TextBox
+                        Margin="0,0,0,25"
+                        VerticalAlignment="Center"
+                        materialDesign:HintAssist.Hint="模板名称"
+                        materialDesign:TextFieldAssist.HasClearButton="True"
+                        FontSize="18"
+                        Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                        Text="{Binding BaseFiledTemplateFromValue.BaseFiledTemplateName, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBox
+                        Height="350"
+                        VerticalAlignment="Top"
+                        materialDesign:HintAssist.Hint="基础字段配置"
+                        AcceptsReturn="True"
+                        FontSize="18"
+                        IsEnabled="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextBoxEnabledComboBox}"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        Text="{Binding BaseFiledTemplateFromValue.BaseFiledTemplateContent, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap"
+                        VerticalScrollBarVisibility="Auto" />
+
+
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Button
+                            Margin="0,8,8,0"
+                            Command="{Binding AddBaseFiledTemplateCommand}"
+                            Content="确认"
+                            IsDefault="True"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <Button.CommandParameter>
+                                <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                    True
+                                </system:Boolean>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button
+                            Margin="0,8,8,0"
+                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                            Content="取消"
+                            IsCancel="True"
+                            Style="{StaticResource MaterialDesignFlatButton}">
+                            <Button.CommandParameter>
+                                <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                    False
+                                </system:Boolean>
+                            </Button.CommandParameter>
+                        </Button>
+                    </StackPanel>
+
+
+                </StackPanel>
+            </materialDesign:DialogHost.DialogContent>
+
+        </materialDesign:DialogHost>
+
+    </Grid>
+</Page>

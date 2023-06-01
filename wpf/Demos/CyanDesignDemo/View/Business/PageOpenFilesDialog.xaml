@@ -1,0 +1,314 @@
+﻿<Page
+    x:Class="CyanDesignDemo.View.Business.PageOpenFilesDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:CyanDesignDemo.View.Business"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="PageOpenFilesDialog"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Page.Resources>
+
+    <Grid Height="Auto" Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10*" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="100,0">
+
+            <ScrollViewer
+                Width="Auto"
+                Height="550"
+                Margin="20,16"
+                VerticalScrollBarVisibility="Hidden">
+
+                <StackPanel>
+
+                    <!--  标题  -->
+                    <TextBlock FontSize="18" Text="{Binding ProjectFiles.Title}" />
+
+                    <!--  表单  -->
+                    <StackPanel Margin="0,30">
+
+                        <TextBox
+                            Margin="0,0,0,25"
+                            VerticalAlignment="Center"
+                            materialDesign:HintAssist.Hint="配置标题"
+                            materialDesign:TextFieldAssist.HasClearButton="True"
+                            FontSize="18"
+                            Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                            Text="{Binding ProjectFiles.ProjectFilesTitle, UpdateSourceTrigger=PropertyChanged}" />
+
+
+                        <!--  文件选择  -->
+                        <StackPanel Margin="0,15,0,30">
+
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton
+                                    Content="直接打开"
+                                    IsChecked="{Binding ProjectFiles.IsDirectOpen, Mode=TwoWay}"
+                                    Style="{StaticResource MaterialDesignDarkRadioButton}" />
+
+                                <RadioButton
+                                    Margin="20,0,0,0"
+                                    Content="选择打开方式"
+                                    IsChecked="{Binding ProjectFiles.IsChooseOpen, Mode=TwoWay}"
+                                    Style="{StaticResource MaterialDesignDarkRadioButton}" />
+                            </StackPanel>
+
+                            <StackPanel Visibility="{Binding ProjectFiles.IsChooseOpen, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="3*" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        VerticalAlignment="Center"
+                                        materialDesign:HintAssist.Hint="打开方式路径"
+                                        materialDesign:TextFieldAssist.HasClearButton="True"
+                                        FontSize="18"
+                                        Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                        Text="{Binding ProjectFiles.ProjectFilesOpenMethodPath}" />
+
+                                    <Button
+                                        Grid.Column="3"
+                                        Width="90"
+                                        Margin="25,0,25,0"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding SelectOpenMethodPathCommand}"
+                                        Content="浏览"
+                                        Style="{StaticResource MaterialDesignOutlinedSecondaryLightButton}" />
+
+                                </Grid>
+                                <StackPanel Margin="0,20,0,0" Orientation="Horizontal">
+
+                                    <Button
+                                        Width="Auto"
+                                        HorizontalAlignment="Left"
+                                        Command="{Binding SelectVsCode}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon
+                                                Width="24"
+                                                Height="24"
+                                                Kind="MicrosoftVisualStudioCode" />
+                                            <TextBlock
+                                                Margin="10,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Text="VSCode" />
+                                        </StackPanel>
+                                    </Button>
+                                    <!--<Button
+                                        Width="Auto"
+                                        Margin="10,0,0,0"
+                                        HorizontalAlignment="Left"
+                                        Command="{Binding SelectIDEA}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image
+                                                Width="28"
+                                                Height="28"
+                                                Source="http://aerwen.net/prod-api/uploads/20230524/2808DF37C4763276.png" />
+                                            <TextBlock
+                                                Margin="10,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Text="IDEA" />
+                                        </StackPanel>
+                                    </Button>-->
+
+
+                                </StackPanel>
+                            </StackPanel>
+
+
+                        </StackPanel>
+
+
+                        <!--  文件选择  -->
+                        <StackPanel Margin="0,15,0,30">
+
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton
+                                    Content="文件夹"
+                                    IsChecked="{Binding ProjectFiles.IsFolderSelected, Mode=TwoWay}"
+                                    Style="{StaticResource MaterialDesignDarkRadioButton}" />
+
+                                <RadioButton
+                                    Margin="20,0,0,0"
+                                    Content="文件"
+                                    IsChecked="{Binding ProjectFiles.IsFileSelected, Mode=TwoWay}"
+                                    Style="{StaticResource MaterialDesignDarkRadioButton}" />
+                            </StackPanel>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3*" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="3"
+                                    VerticalAlignment="Center"
+                                    materialDesign:HintAssist.Hint="文件路径"
+                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                    FontSize="18"
+                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                    Text="{Binding ProjectFiles.ProjectFilesFileOpenPath}" />
+
+                                <Button
+                                    Grid.Column="3"
+                                    Width="90"
+                                    Margin="25,0,25,0"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding SelectFileOpenPathCommand}"
+                                    Content="浏览"
+                                    Style="{StaticResource MaterialDesignOutlinedSecondaryLightButton}" />
+
+                            </Grid>
+
+                        </StackPanel>
+
+
+                        <!--  开关  -->
+                        <StackPanel Margin="20,0,0,30">
+                            <TextBlock
+                                Margin="0,0,0,15"
+                                FontSize="16"
+                                Text="是否需要打开" />
+                            <ToggleButton
+                                Width="60"
+                                HorizontalAlignment="Left"
+                                IsChecked="{Binding ProjectFiles.IsProjectFilesOpen}"
+                                Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                ToolTip="开启或关闭">
+                                <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                                    <SolidColorBrush Color="Green" />
+                                </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                                <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                                    <SolidColorBrush Color="Red" />
+                                </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                            </ToggleButton>
+
+                        </StackPanel>
+
+                        <StackPanel Margin="20,0,0,30">
+                            <TextBlock
+                                Margin="0,0,0,15"
+                                FontSize="16"
+                                Text="是否需要启动Git拉取" />
+                            <ToggleButton
+                                Width="60"
+                                HorizontalAlignment="Left"
+                                Checked="ToggleButton_Checked"
+                                IsChecked="{Binding ProjectFiles.IsProjectFilesIsGit}"
+                                Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                ToolTip="开启或关闭"
+                                Unchecked="ToggleButton_Unchecked">
+                                <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                                    <SolidColorBrush Color="Green" />
+                                </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                                <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                                    <SolidColorBrush Color="Red" />
+                                </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                            </ToggleButton>
+
+                        </StackPanel>
+
+
+                        <StackPanel Margin="0,15,0,30" Visibility="{Binding ProjectFiles.IsProjectFilesIsGit, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3*" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="3"
+                                    VerticalAlignment="Center"
+                                    materialDesign:HintAssist.Hint="Gti项目仓库路径"
+                                    materialDesign:TextFieldAssist.HasClearButton="True"
+                                    FontSize="18"
+                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                    Text="{Binding ProjectFiles.ProjectFilesGitPath}" />
+
+                                <Button
+                                    Grid.Column="3"
+                                    Width="90"
+                                    Margin="25,0,25,0"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding SelectGitPathCommand}"
+                                    Content="浏览"
+                                    Style="{StaticResource MaterialDesignOutlinedSecondaryLightButton}" />
+
+                            </Grid>
+                        </StackPanel>
+
+
+                        <!--<TextBox
+                            Height="100"
+                            VerticalAlignment="Top"
+                            materialDesign:HintAssist.Hint="备注"
+                            AcceptsReturn="True"
+                            FontSize="18"
+                            IsEnabled="{Binding Path=IsChecked, ElementName=MaterialDesignOutlinedTextBoxEnabledComboBox}"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Text="{Binding ProjectModelValue.ProjectIntro, UpdateSourceTrigger=PropertyChanged}"
+                            TextWrapping="Wrap"
+                            VerticalScrollBarVisibility="Auto" />-->
+
+                    </StackPanel>
+                </StackPanel>
+
+
+            </ScrollViewer>
+
+        </StackPanel>
+
+        <!--  表单按钮  -->
+        <StackPanel
+            Grid.Row="1"
+            Margin="0,0,50,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                Margin="0,8,8,0"
+                Command="{Binding SaveCommand}"
+                Content="确认"
+                IsDefault="True"
+                Style="{StaticResource MaterialDesignFlatButton}">
+                <Button.CommandParameter>
+                    <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                        True
+                    </system:Boolean>
+                </Button.CommandParameter>
+            </Button>
+            <Button
+                Margin="0,8,8,0"
+                Command="{Binding CloseCommand}"
+                Content="取消"
+                IsCancel="True"
+                Style="{StaticResource MaterialDesignFlatButton}">
+                <Button.CommandParameter>
+                    <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                        False
+                    </system:Boolean>
+                </Button.CommandParameter>
+            </Button>
+        </StackPanel>
+
+    </Grid>
+
+
+</Page>

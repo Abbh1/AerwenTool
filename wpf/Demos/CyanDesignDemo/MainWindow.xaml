@@ -1,0 +1,218 @@
+﻿<Window
+    x:Class="CyanDesignDemo.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:attached="clr-namespace:DMSkin.Attached;assembly=DMSkin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dmskin="clr-namespace:DMSkin;assembly=DMSkin"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="工具箱"
+    Width="1200"
+    Height="800"
+    MinWidth="380"
+    MinHeight="300"
+    Foreground="Black"
+    Icon="/Icons/logo.ico"
+    ResizeMode="CanResizeWithGrip"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+
+    <Grid Background="{StaticResource GrayColor8}">
+
+        <!--  Grid分块布局  -->
+        <!--  列  -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="116" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+
+        <!--  菜单栏  -->
+        <TabControl
+            x:Name="tabControl"
+            Grid.Column="0"
+            Style="{StaticResource TabControlStyle}"
+            TabStripPlacement="Left">
+
+
+            <!--  头部Icon  -->
+            <TabItem
+                attached:Icon.Geometry="{StaticResource Menu}"
+                IsEnabled="False"
+                Style="{StaticResource TabItemNoneStyle}">
+                <TabItem.Header>
+                    <Image
+                        Width="75"
+                        Height="75"
+                        Source="/Icons/logo.png"
+                        Stretch="Fill" />
+                </TabItem.Header>
+            </TabItem>
+
+
+            <!--  一键打开  -->
+            <TabItem Height="80" IsSelected="True">
+                <TabItem.Header>
+                    <StackPanel>
+                        <Button
+                            Width="Auto"
+                            Height="57"
+                            Command="{Binding NavCommand}"
+                            CommandParameter="PageOpen"
+                            Foreground="#a8a8aa"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}">
+                            <StackPanel Orientation="Vertical">
+                                <materialDesign:PackIcon
+                                    Width="30"
+                                    Height="30"
+                                    HorizontalAlignment="Center"
+                                    Kind="MicrosoftVisualStudioCode"
+                                    Style="{Binding MenuIcon}" />
+                                <TextBlock HorizontalAlignment="Center" Text="一键打开" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </TabItem.Header>
+            </TabItem>
+
+
+            <!--  一键建表  -->
+            <TabItem Height="80" IsSelected="True">
+                <TabItem.Header>
+                    <StackPanel>
+                        <Button
+                            Width="Auto"
+                            Height="57"
+                            Command="{Binding NavCommand}"
+                            CommandParameter="PageCreateTable"
+                            Foreground="#a8a8aa"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}">
+                            <StackPanel Orientation="Vertical">
+                                <materialDesign:PackIcon
+                                    Width="30"
+                                    Height="30"
+                                    HorizontalAlignment="Center"
+                                    Kind="DatabaseArrowDown"
+                                    Style="{Binding MenuIcon}" />
+                                <TextBlock HorizontalAlignment="Center" Text="一键建表" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </TabItem.Header>
+            </TabItem>
+
+            <!--  下载  -->
+            <TabItem Height="80" IsSelected="True">
+                <TabItem.Header>
+                    <StackPanel>
+                        <Button
+                            Width="Auto"
+                            Height="57"
+                            Command="{Binding NavCommand}"
+                            CommandParameter="PageDownLoad"
+                            Foreground="#a8a8aa"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}">
+                            <StackPanel Orientation="Vertical">
+                                <materialDesign:PackIcon
+                                    Width="30"
+                                    Height="30"
+                                    HorizontalAlignment="Center"
+                                    Kind="CloudArrowDown"
+                                    Style="{Binding MenuIcon}" />
+                                <TextBlock HorizontalAlignment="Center" Text="资源中心" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </TabItem.Header>
+            </TabItem>
+
+
+            <!--  思维导图  -->
+            <TabItem Height="80" IsSelected="True">
+                <TabItem.Header>
+                    <StackPanel>
+                        <Button
+                            Width="Auto"
+                            Height="57"
+                            Command="{Binding NavCommand}"
+                            CommandParameter="PageMind"
+                            Foreground="#a8a8aa"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}">
+                            <StackPanel Orientation="Vertical">
+                                <materialDesign:PackIcon
+                                    Width="30"
+                                    Height="30"
+                                    HorizontalAlignment="Center"
+                                    Kind="FileArrowLeftRight"
+                                    Style="{Binding MenuIcon}" />
+                                <TextBlock HorizontalAlignment="Center" Text="思维导图" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </TabItem.Header>
+            </TabItem>
+
+            <!--  个人中心  -->
+            <!--<TabItem Height="80" IsSelected="True">
+                <TabItem.Header>
+                    <StackPanel>
+                        <Button
+                            Width="Auto"
+                            Height="57"
+                            Command="{Binding NavCommand}"
+                            CommandParameter="PageCreateTable"
+                            Foreground="#a8a8aa"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}">
+                            <StackPanel Orientation="Vertical">
+                                <materialDesign:PackIcon
+                                    Width="30"
+                                    Height="30"
+                                    HorizontalAlignment="Center"
+                                    Kind="Account"
+                                    Style="{Binding MenuIcon}" />
+                                <TextBlock HorizontalAlignment="Center" Text="个人中心" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </TabItem.Header>
+            </TabItem>-->
+
+            <!--  登出  -->
+            <TabItem Height="80" IsSelected="True">
+                <TabItem.Header>
+                    <StackPanel>
+                        <Button
+                            Width="Auto"
+                            Height="57"
+                            Command="{Binding LogOutCommand}"
+                            CommandParameter="PageDownLoad"
+                            Foreground="#a8a8aa"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}">
+                            <StackPanel Orientation="Vertical">
+                                <materialDesign:PackIcon
+                                    Width="30"
+                                    Height="30"
+                                    HorizontalAlignment="Center"
+                                    Kind="AccountArrowLeftOutline"
+                                    Style="{Binding MenuIcon}" />
+                                <TextBlock HorizontalAlignment="Center" Text="登出" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </TabItem.Header>
+            </TabItem>
+        </TabControl>
+
+
+        <Grid Grid.Column="1" Height="Auto">
+            <TextBlock Text="{Binding Name}" />
+            <Frame x:Name="MainFrame" />
+        </Grid>
+
+
+    </Grid>
+</Window>

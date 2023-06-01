@@ -1,0 +1,257 @@
+﻿<Page
+    x:Class="CyanDesignDemo.View.Business.PageMind"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:CyanDesignDemo.View.Business"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="PageMind"
+    d:DesignHeight="700"
+    d:DesignWidth="1200"
+    mc:Ignorable="d">
+
+    <materialDesign:DialogHost
+        Height="Auto"
+        DialogContentUniformCornerRadius="20"
+        DialogTheme="Inherit"
+        IsOpen="{Binding IsShow}"
+        RenderTransformOrigin="0.5,0.42">
+
+        <Grid Background="White">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1.8*" />
+                <RowDefinition Height="7*" />
+            </Grid.RowDefinitions>
+
+
+            <!--  上面 数据库连接  -->
+            <Grid Grid.Row="0" Margin="30,50,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="251*" />
+                    <ColumnDefinition Width="519*" />
+                </Grid.ColumnDefinitions>
+
+
+                <StackPanel Grid.Column="0">
+                    <!--  标题  -->
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon
+                            Width="30"
+                            Height="30"
+                            Margin="0,0,10,0"
+                            Kind="DatabaseCog" />
+                        <TextBlock
+                            Margin="0,0,0,20"
+                            FontSize="18"
+                            Text="数据库连接" />
+                    </StackPanel>
+
+                    <StackPanel Margin="40,0,0,0" Orientation="Horizontal">
+                        <Button
+                            Margin="0,0,20,0"
+                            Command="{Binding ConnectToDatabaseCommand}"
+                            Content="测试连接" />
+                        <Button
+                            Margin="0,0,20,0"
+                            Command="{Binding OpenConnectFilesCommand}"
+                            Content="编辑" />
+                    </StackPanel>
+
+                </StackPanel>
+
+                <StackPanel Grid.Column="1">
+                    <!--  标题  -->
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon
+                            Width="30"
+                            Height="30"
+                            Margin="0,0,10,0"
+                            Kind="Table" />
+                        <TextBlock
+                            Margin="0,0,0,20"
+                            FontSize="18"
+                            Text="选择表" />
+                    </StackPanel>
+
+                    <StackPanel Margin="40,0,0,0" Orientation="Horizontal">
+                        <Button
+                            Margin="0,0,20,0"
+                            Command="{Binding OpenSelectTableCommand}"
+                            Content="点击选择" />
+                        <Button
+                            Margin="0,0,20,0"
+                            Command="{Binding GetAllTableCommand}"
+                            Content="选择全部" />
+                    </StackPanel>
+
+                </StackPanel>
+
+            </Grid>
+
+
+            <!--  下面 结果  -->
+            <StackPanel Grid.Row="1" Margin="50,0">
+                <Button
+                    Width="200"
+                    Margin="150,0,0,0"
+                    HorizontalAlignment="Left"
+                    Command="{Binding ChangeCommand}"
+                    Content="转换" />
+                <Button
+                    HorizontalAlignment="Left"
+                    Click="Button_Click"
+                    Style="{StaticResource MaterialDesignIconForegroundButton}"
+                    ToolTip="复制">
+                    <materialDesign:PackIcon Kind="ContentCopy" />
+                </Button>
+                <TextBox
+                    x:Name="ResTextBox"
+                    Height="500"
+                    AcceptsReturn="True"
+                    FontSize="18"
+                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                    Text="{Binding MindRes}"
+                    TextWrapping="Wrap"
+                    VerticalScrollBarVisibility="Auto" />
+            </StackPanel>
+
+
+        </Grid>
+
+
+
+        <!--  弹窗内容  -->
+        <materialDesign:DialogHost.DialogContent>
+            <StackPanel Width="600" Margin="16">
+                <!--  标题  -->
+                <TextBlock
+                    Margin="0,0,0,30"
+                    FontSize="18"
+                    Text="选择需要转换的表" />
+
+                <!--  搜索框  -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+
+                    <materialDesign:ColorZone
+                        Width="250"
+                        Margin="0,0,0,15"
+                        Padding="8,4,8,4"
+                        HorizontalAlignment="Left"
+                        Panel.ZIndex="1"
+                        materialDesign:ElevationAssist.Elevation="Dp2"
+                        CornerRadius="2"
+                        Mode="Standard">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <!--  搜索按钮  -->
+                            <Button Command="{Binding SearchCommand}" Style="{StaticResource MaterialDesignToolButton}">
+                                <materialDesign:PackIcon Kind="Search" Opacity=".56" />
+                            </Button>
+                            <TextBox
+                                Grid.Column="1"
+                                MinWidth="200"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                materialDesign:HintAssist.Hint="请输入表名称/表注释"
+                                materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                BorderThickness="0"
+                                Text="{Binding SearchValue}" />
+                            <!--<Button
+                                            Grid.Column="2"
+                                            Command="{Binding RefreshCommand}"
+                                            Style="{StaticResource MaterialDesignToolButton}">
+                                            <materialDesign:PackIcon
+                                                Margin="8,0,0,0"
+                                                Kind="Refresh"
+                                                Opacity=".56" />
+                                        </Button>-->
+
+                            <Button
+                                Grid.Column="2"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource MaterialDesignToolButton}">
+                                <Button.CommandParameter>
+                                    <StackPanel Margin="16" Visibility="{Binding IsRefresh}">
+                                        <ProgressBar
+                                            Margin="16"
+                                            HorizontalAlignment="Center"
+                                            IsIndeterminate="True"
+                                            Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                            Value="0" />
+                                    </StackPanel>
+                                </Button.CommandParameter>
+                                <materialDesign:PackIcon
+                                    Margin="8,0,0,0"
+                                    Kind="Refresh"
+                                    Opacity=".56" />
+                            </Button>
+
+                        </Grid>
+                    </materialDesign:ColorZone>
+
+
+                </StackPanel>
+
+                <DataGrid
+                    x:Name="ProjectDataGrid"
+                    MaxHeight="500"
+                    materialDesign:DataGridAssist.SelectedCellBorderBrush="#d3d3d3"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    ItemsSource="{Binding MindTableList}"
+                    SelectionMode="Extended">
+
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn Binding="{Binding IsSelected}" Header="选择" />
+                        <DataGridTextColumn
+                            Binding="{Binding MindTableName}"
+                            Header="表名称"
+                            IsReadOnly="True" />
+                        <DataGridTextColumn
+                            Binding="{Binding MindTableAnnotation}"
+                            Header="表注释"
+                            IsReadOnly="True" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <Button
+                        Margin="0,8,8,0"
+                        Command="{Binding GetChangeTableCommand}"
+                        Content="确认"
+                        IsDefault="True"
+                        Style="{StaticResource MaterialDesignFlatButton}">
+                        <Button.CommandParameter>
+                            <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                True
+                            </system:Boolean>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button
+                        Margin="0,8,8,0"
+                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                        Content="取消"
+                        IsCancel="True"
+                        Style="{StaticResource MaterialDesignFlatButton}">
+                        <Button.CommandParameter>
+                            <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                False
+                            </system:Boolean>
+                        </Button.CommandParameter>
+                    </Button>
+                </StackPanel>
+
+
+            </StackPanel>
+        </materialDesign:DialogHost.DialogContent>
+
+    </materialDesign:DialogHost>
+
+</Page>

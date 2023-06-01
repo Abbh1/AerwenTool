@@ -1,0 +1,52 @@
+using Newtonsoft.Json;
+using OfficeOpenXml.Attributes;
+using SqlSugar;
+using System;
+$if(genTable.TplCategory == "tree")
+using ARW.Model.Models.Business.${genTable.moduleName};
+using System.Collections.Generic;
+$end
+
+namespace ${options.DtosNamespace}.Vo.Business.${genTable.moduleName}
+{
+    /// <summary>
+    /// ${genTable.FunctionName}展示对象
+    /// </summary>
+    public class ${replaceDto.ModelTypeName}Vo
+    {
+$foreach(item in genTable.Columns)
+$if(item.IsInit != true)
+
+        /// <summary>
+        /// 描述 :${item.ColumnComment} ${item.Remark}
+        /// </summary>
+$if((item.IsList || item.IsPk))
+$if(item.IsGuid)
+		[JsonConverter(typeof(ValueToStringConverter))]
+$if(genTable.TplCategory == "tree")
+		[SugarColumn(IsTreeKey = true)]
+$end
+$end
+$if(replaceDto.ShowBtnExport)
+$if(item.IsRequired && item.IsIncrement == false && item.IsPk == false)
+        [EpplusTableColumn(Header = "$if(item.ColumnComment == "")${item.CsharpField}${else}${item.ColumnComment}${end}"$if(item.CsharpType == "DateTime"), NumberFormat = "yyyy-MM-dd HH:mm:ss"$end)]
+$else
+		[EpplusIgnore]
+$end
+$end
+        public $item.CsharpType$item.RequiredStr $item.CsharpField { get; set; }
+$end
+$end
+$end
+
+$if(genTable.TplCategory == "tree")
+        [EpplusIgnore]
+        public string ParentName { get; set; }
+
+        [EpplusIgnore]
+		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [SugarColumn(IsIgnore = true)]
+        public List<${replaceDto.ModelTypeName}Vo> Children { get; set; }
+$end
+    }
+}

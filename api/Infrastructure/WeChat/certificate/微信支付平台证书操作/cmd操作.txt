@@ -1,0 +1,2 @@
+
+php -f ./bin/CertificateDownloader.php -- -k CHOFVQJOXBJEWZJEJKUWTHUBOSVQBRIW -m 1626418383 -f D:/phpstudy_pro/WWW/fitness/api/certificate/apiclient_key.pem -s 1BD546C97BFA3BF71672C6915AC4E9E1EAE9C90E -o D:\phpstudy_pro\WWW\fitness\api\certificate\

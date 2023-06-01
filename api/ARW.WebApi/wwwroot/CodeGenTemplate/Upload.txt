@@ -1,0 +1,116 @@
+<template>
+    <el-dialog title="导入" v-model="modelValue" width="400px" @closed="closeDialog">
+      <el-upload
+        name="file"
+        ref="uploadRef"
+        :limit="1"
+        accept=".xlsx, .xls"
+        :headers="upload.headers"
+        :action="upload.url + '?updateSupport=' + upload.updateSupport"
+        :disabled="upload.isUploading"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
+        :auto-upload="false"
+        drag>
+        <el-icon class="el-icon--upload">
+          <upload-filled />
+        </el-icon>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <template #tip>
+          <div class="el-upload__tip text-center">
+            <div class="el-upload__tip">
+              <el-checkbox v-model="upload.updateSupport" /> 是否更新已经存在的${genTable.functionName}
+            </div>
+            <span>仅允许导入xls、xlsx格式文件。</span>
+            <el-link type="primary" :underline="false" style="font-size: 12px; vertical-align: baseline" @click="importTemplate">下载模板</el-link>
+          </div>
+        </template>
+      </el-upload>
+      <template #footer>
+        <el-button @click="closeDialog">取消</el-button>
+        <el-button type="primary" @click="submitFileForm">提交</el-button>
+      </template>
+    </el-dialog>
+</template>
+
+
+<script setup>
+import { reactive, ref, watch } from "vue";
+import { ElMessage, ElMessageBox, ElNotification, ElLoading } from 'element-plus'
+import { getToken } from '@/utils/auth'
+
+
+// 业务参数
+const formRef = ref();
+const labelWidth = 100;
+const { proxy } = getCurrentInstance()
+let loadingInstance;
+let uploadRef = ref()
+
+/*** 导入参数 */
+const upload = reactive({
+  // 是否禁用上传
+  isUploading: false,
+  // 是否更新已经存在的数据
+  updateSupport: false,
+  // 设置上传的请求头部
+  headers: { Authorization: 'Bearer ' + getToken() },
+  // 上传的地址
+  url: import.meta.env.VITE_APP_BASE_API + '/business/${tool.FirstLowerCase(genTable.BusinessName)}/importData',
+})
+
+// 打开遮罩层
+function loading(content) {
+  loadingInstance = ElLoading.service({
+    lock: true,
+    text: content,
+    background: "rgba(0, 0, 0, 0.7)",
+  })
+}
+// 关闭遮罩层
+function closeLoading() {
+  loadingInstance.close();
+}
+
+// -业务方法
+/** 下载模板操作 */
+function importTemplate() {
+  proxy.download('/business/${tool.FirstLowerCase(genTable.BusinessName)}/importTemplate', '${genTable.functionName}数据导入模板')
+}
+/**文件上传中处理 */
+const handleFileUploadProgress = (event, file, fileList) => {
+  upload.isUploading = true
+  loading('正在导入数据，请稍候...')
+}
+/** 文件上传成功处理 */
+const handleFileSuccess = (response, file, fileList) => {
+  closeLoading();
+  closeDialog()
+  upload.isUploading = false
+  uploadRef.value.clearFiles()
+  ElMessageBox.alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.data + '</div>', '导入结果', {
+    dangerouslyUseHTMLString: true,
+  })
+  props.done()
+}
+/** 提交上传文件 */
+function submitFileForm() {
+  uploadRef.value.submit()
+}
+
+
+// -基础参数
+const emits = defineEmits(["update:modelValue"]); 
+const dialogVisible = ref(props.modelValue);
+const formData = reactive({});
+const props = defineProps({
+  modelValue: Boolean,
+  done: Function,
+});
+
+// -基础方法
+const closeDialog = () => {
+  dialogVisible.value = false;
+  emits("update:modelValue", false);
+};
+</script>

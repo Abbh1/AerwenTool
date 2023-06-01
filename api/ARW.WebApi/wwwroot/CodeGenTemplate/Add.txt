@@ -1,0 +1,266 @@
+<template>
+  <el-dialog v-model="props.modelValue" title="添加${genTable.functionName}信息" width="900px" @closed="closeDialog" @open="openDialog">
+    <el-form ref="formRef" :model="formData" :rules="rules">
+      <el-row :gutter="20">
+
+$if(genTable.TplCategory == "tree")
+	      <el-col :lg="24">
+            <el-form-item  :label-width="labelWidth" label="上级菜单" prop="${genTable.Options.TreeParentCode}">
+              <el-cascader
+                class="w100"
+                :options="dataList"
+                :props="{ checkStrictly: true, value: '${tool.FirstLowerCase(genTable.Options.TreeCode)}', label: '${tool.FirstLowerCase(genTable.Options.TreeName)}', emitPath: false }"
+                placeholder="请选择上级菜单"
+                clearable
+                v-model="formData.${tool.FirstLowerCase(genTable.Options.TreeParentCode)}">
+                <template #default="{ node, data }">
+                  <span>{{ data.${tool.FirstLowerCase(genTable.Options.TreeName)} }}</span>
+                  <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
+                </template>
+              </el-cascader>
+            </el-form-item>
+        </el-col>
+$end
+
+$foreach(column in genTable.Columns)
+$set(labelName = "")
+$set(columnName = column.CsharpFieldFl)
+$set(value = "item.dictValue")
+$if(column.ColumnComment != "")
+$set(labelName = column.ColumnComment)
+$else
+$set(labelName = column.CsharpFieldFl)
+$end
+$if(column.CsharpType == "int" || column.CsharpType == "long")
+    $set(value = "parseInt(item.dictValue)")
+$end
+$if(column.IsInit != true && column.IsPk != true)
+$if(column.HtmlType == "inputNumber" || column.HtmlType == "customInput")
+          <el-col :lg="12">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <el-input-number v-model.number="formData.${columnName}" controls-position="right" :min="0" ${column.DisabledStr}/>
+            </el-form-item>
+          </el-col>
+$elseif(column.HtmlType == "datetime")
+          <el-col :lg="12">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <el-date-picker v-model="formData.${columnName}" type="datetime" :teleported="false" placeholder="选择日期时间"${column.DisabledStr}></el-date-picker>
+            </el-form-item>
+          </el-col>
+$elseif(column.HtmlType == "imageUpload")
+          <el-col :lg="12">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <UploadImage ref="uploadRef" v-model="formData.${columnName}" :data=imgData :limit="1" :fileSize="5"
+              :drag="true" />
+            </el-form-item>
+          </el-col>
+$elseif(column.HtmlType == "fileUpload")
+          <el-col :lg="12">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <UploadFile v-model="formData.${columnName}" :data=imgData />
+            </el-form-item>
+          </el-col>
+$elseif(column.HtmlType == "radio")
+          <el-col :lg="12">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <el-radio-group v-model="formData.${columnName}"${column.DisabledStr}>
+                <el-radio v-for="item in $if(column.DictType != "") ${column.DictType} $else ${column.CsharpFieldFl}Options$end" :key="item.dictValue" :label="${value}">{{item.dictLabel}}</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+$elseif(column.HtmlType == "editor")
+          <el-col :lg="24">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <editor v-model="formData.${columnName}" :min-height="200" />
+            </el-form-item>
+          </el-col>
+$elseif(column.HtmlType == "select")
+          <el-col :lg="12">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <el-select v-model="formData.${columnName}" placeholder="请选择${labelName}"${column.DisabledStr}>
+                <el-option v-for="item in $if(column.DictType != "") ${column.DictType} $else ${column.CsharpFieldFl}Options$end" :key="item.dictValue" :label="item.dictLabel" :value="${value}"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+$elseif(column.HtmlType == "checkbox")
+          <el-col :lg="12">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <el-checkbox-group v-model="formData.${columnName}Checked"${column.DisabledStr}>
+                <el-checkbox v-for="item in $if(column.DictType != "") ${column.DictType} $else ${column.CsharpFieldFl}Options$end" :key="item.dictValue" :label="item.dictValue">{{item.dictLabel}}</el-checkbox>
+              </el-checkbox-group>
+            </el-form-item>
+          </el-col>
+$elseif(column.HtmlType == "textarea")
+          <el-col :lg="24">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <el-input v-model="formData.${columnName}" type="textarea" :rows="5" placeholder="请输入${labelName}" ${column.DisabledStr}/>
+            </el-form-item>
+          </el-col>
+$elseif(column.HtmlType == "map")
+          <el-col :lg="24">
+              <el-form-item :label-width="labelWidth" label="位置" prop="">
+                <Map v-model="locationList" style="margin-top: 20px;"></Map>
+              </el-form-item>
+         </el-col>
+$else
+   <el-col :lg="12">
+            <el-form-item :label-width="labelWidth" label="${labelName}" prop="${columnName}">
+              <el-input v-model="formData.${columnName}" placeholder="请输入${labelName}" ${column.DisabledStr}/>
+            </el-form-item>
+          </el-col>
+$end
+$end
+$end
+
+      </el-row>
+    </el-form>
+
+    <template #footer>
+      <div key="dialog-footer">
+        <el-button type="primary" @click="handleAddClick(formRef)">添加</el-button>
+        <el-button @click="handleResetClick(formRef)">重置</el-button>
+      </div>
+    </template>
+  </el-dialog>
+</template>
+
+
+<script setup>
+import { reactive, ref, watch } from "vue";
+import { ElMessage } from 'element-plus'
+import modal from '@/plugins/modal.js'
+import { $if(genTable.TplCategory == "tree") ${tool.FirstLowerCase(genTable.BusinessName)}TreeList,$end addOrUpdate${genTable.BusinessName} } from '@/api/business/${options.SubNamespace}/${tool.FirstLowerCase(genTable.BusinessName)}.js';
+
+
+// 打开弹窗时回调
+const openDialog = async () => {
+
+$foreach(item in genTable.Columns)
+$if(item.DictType != "")
+   await get${item.DictType}()
+$end
+$end
+
+$if(genTable.TplCategory == "tree")
+    await getTreeList()
+$end
+}
+
+// -业务参数
+$if(genTable.TplCategory == "tree")
+const dataList = ref([])
+$end
+$foreach(item in genTable.Columns)
+$if(item.HtmlType == "map")
+const locationList = ref({})
+$end
+$end
+$foreach(item in genTable.Columns)
+$if(item.DictType != "")
+// ${item.ColumnComment}字典选项列表
+const ${item.DictType} = ref([]);
+$end
+$end
+
+
+// -业务方法
+$foreach(item in genTable.Columns)
+$if(item.IsInit != true)
+$if((item.HtmlType == "radio" || item.HtmlType == "select" || item.HtmlType == "checkbox") && item.DictType == "")
+// ${item.ColumnComment}选项列表
+const ${item.CsharpFieldFl}Options = ref([
+	{ dictLabel: '', dictValue: '1' },
+	{ dictLabel: '', dictValue: '2' },
+]);
+$end
+$if(item.DictType != "")
+// 字典获取
+async function get${item.DictType}() {
+  await proxy.getDicts('${item.DictType}').then((res) => {
+    ${item.DictType}.value = res.data
+  })
+}
+$end
+$end
+$end
+
+
+
+// -基础参数
+const labelWidth = 100;
+const formRef = ref();
+const { proxy } = getCurrentInstance()
+const emits = defineEmits(["update:modelValue"]);
+const formData = reactive({
+});
+const props = defineProps({
+  modelValue: Boolean,
+  done: Function,
+});
+const imgData = ref({
+  fileDir: "${genTable.BusinessName}"
+})
+
+// 验证
+const rules = reactive({
+$foreach(column in genTable.Columns)
+$if(column.IsRequired && column.IsIncrement == false && column.IsInit != true)
+    ${column.CsharpFieldFl}: [{ required: true, message: "${column.ColumnComment}不能为空", trigger: $if(column.htmlType == "select")"change"$else"blur"$end
+$if(column.CsharpType == "int" || column.CsharpType == "long"), type: "number"$end }],
+$end
+$end
+});
+
+// -基础方法
+$if(genTable.TplCategory == "tree")
+async function getTreeList() {
+  ${tool.FirstLowerCase(genTable.BusinessName)}TreeList().then((res) => {
+    if (res.code == 200) {
+      dataList.value = res.data
+    }
+  })
+}
+watch(props, async (v) => {
+    
+});
+$end
+
+// 提交
+const handleAddClick = async (formEl) => {
+  if (!formEl) return;
+  formEl.validate(async (valid) => {
+    if (!valid) {
+      return;
+    }
+
+$foreach(item in genTable.Columns)
+$if(item.HtmlType == "map")
+    // 地址处理
+    let locationData = locationList.value
+    if (locationData.address == null) {
+      modal.msgError('请选择地址')
+      return;
+    }
+    formData.${tool.FirstLowerCase(genTable.BusinessName)}Location = locationData.address
+    formData.longitude = locationData.longitude
+    formData.latitude = locationData.latitude
+$end
+$end
+
+    const { code } = await addOrUpdate${genTable.BusinessName}(formData);
+    if (code == 200) {
+      modal.msgSuccess('添加成功')
+      closeDialog();
+    }
+  });
+};
+const closeDialog = () => {
+  handleResetClick(formRef.value);
+  props.done();
+  emits("update:modelValue", false);
+};
+const handleResetClick = async (formEl) => {
+  if (!formEl) return;
+  formEl.resetFields();
+};
+</script>
